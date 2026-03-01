@@ -46,8 +46,10 @@ export default function StandingsMini({ standings, loading }) {
                 {/* Filas */}
                 {topTeams.map((entry, index) => {
                     const position = index + 1;
-                    const isTop = position <= 4;
+                    const isTop = position <= 8;
                     const isEven = index % 2 === 0;
+                    const logo = teamLogos[entry.team];
+                    const shortName = teamShortNames[entry.team] ?? entry.team;
 
                     return (
                         <div
@@ -69,7 +71,27 @@ export default function StandingsMini({ standings, loading }) {
                                 className="text-xs font-bold uppercase tracking-wide truncate"
                                 style={{ color: theme.textPrimary }}
                             >
-                                {entry.team}
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    {logo && (
+                                        <img
+                                            src={logo}
+                                            alt={entry.team}
+                                            className="w-5 h-5 object-contain flex-shrink-0"
+                                        />
+                                    )}
+                                    <span
+                                        className="block sm:hidden text-xs font-bold uppercase tracking-wide"
+                                        style={{ color: theme.textPrimary }}
+                                    >
+                                        {shortName}
+                                    </span>
+                                    <span
+                                        className="hidden sm:block text-xs font-bold uppercase tracking-wide truncate"
+                                        style={{ color: theme.textPrimary }}
+                                    >
+                                        {entry.team}
+                                    </span>
+                                </div>
                             </span>
                             <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
                                 {entry.played}

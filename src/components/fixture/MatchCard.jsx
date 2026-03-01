@@ -1,4 +1,5 @@
 import { useTheme } from "../../context/ThemeContext";
+import { teamLogos } from "../../data/teamLogos";
 
 export default function MatchCard({ match }) {
     const { theme } = useTheme();
@@ -7,6 +8,9 @@ export default function MatchCard({ match }) {
     const awayScore = hasResult ? match.result.awayScore : null;
     const homeWon = hasResult && homeScore > awayScore;
     const awayWon = hasResult && awayScore > homeScore;
+
+    const homeLogo = teamLogos[match.home];
+    const awayLogo = teamLogos[match.away];
 
     return (
         <div
@@ -26,6 +30,9 @@ export default function MatchCard({ match }) {
                     >
                         L
                     </span>
+                    {homeLogo && (
+                        <img src={homeLogo} alt={match.home} className="w-12 h-12 object-contain shrink-0" />
+                    )}
                     <span
                         className="text-sm font-bold uppercase tracking-wide truncate"
                         style={{ color: homeWon ? theme.textPrimary : theme.textSecondary }}
@@ -63,6 +70,9 @@ export default function MatchCard({ match }) {
                     >
                         V
                     </span>
+                    {awayLogo && (
+                        <img src={awayLogo} alt={match.away} className="w-12 h-12 object-contain shrink-0" />
+                    )}
                     <span
                         className="text-sm font-bold uppercase tracking-wide truncate"
                         style={{ color: awayWon ? theme.textPrimary : theme.textSecondary }}
