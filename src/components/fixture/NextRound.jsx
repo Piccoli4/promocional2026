@@ -1,16 +1,24 @@
 import { useTheme } from "../../context/ThemeContext";
 import { teamLogos } from "../../data/teamLogos";
+import { getRoundDate } from "./RoundCard";
 
 export default function NextRound({ round }) {
     const { theme } = useTheme();
     if (!round) return null;
 
+    const roundDate = getRoundDate(round.round);
+
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-black uppercase tracking-wider" style={{ color: theme.textPrimary }}>
-                    {round.label}
-                </h2>
+                <div className="flex flex-col">
+                    <h2 className="text-lg font-black uppercase tracking-wider" style={{ color: theme.textPrimary }}>
+                        {round.label}
+                    </h2>
+                    <span className="text-xs font-medium" style={{ color: theme.textMuted }}>
+                        {roundDate}
+                    </span>
+                </div>
                 <span
                     className="text-xs px-3 py-1 rounded-full font-semibold"
                     style={{ backgroundColor: theme.border, color: theme.textMuted }}

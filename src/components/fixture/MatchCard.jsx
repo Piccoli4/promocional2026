@@ -1,7 +1,7 @@
 import { useTheme } from "../../context/ThemeContext";
 import { teamLogos } from "../../data/teamLogos";
 
-export default function MatchCard({ match }) {
+export default function MatchCard({ match, highlightTeam = null }) {
     const { theme } = useTheme();
     const hasResult = match.result !== null;
     const homeScore = hasResult ? match.result.homeScore : null;
@@ -11,6 +11,9 @@ export default function MatchCard({ match }) {
 
     const homeLogo = teamLogos[match.home];
     const awayLogo = teamLogos[match.away];
+
+    const homeIsHighlighted = highlightTeam === match.home;
+    const awayIsHighlighted = highlightTeam === match.away;
 
     return (
         <div
@@ -22,7 +25,12 @@ export default function MatchCard({ match }) {
             }}
         >
             {/* Local */}
-            <div className="flex items-center justify-between gap-3">
+            <div
+                className="flex items-center justify-between gap-3 rounded-xl px-2 py-1 transition-colors duration-200"
+                style={{
+                    backgroundColor: homeIsHighlighted ? "#A9000010" : "transparent",
+                }}
+            >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span
                         className="text-xs font-black px-1.5 py-0.5 rounded shrink-0"
@@ -35,7 +43,14 @@ export default function MatchCard({ match }) {
                     )}
                     <span
                         className="text-sm font-bold uppercase tracking-wide truncate"
-                        style={{ color: homeWon ? theme.textPrimary : theme.textSecondary }}
+                        style={{
+                            color: homeIsHighlighted
+                                ? "#A90000"
+                                : homeWon
+                                    ? theme.textPrimary
+                                    : theme.textSecondary,
+                            fontWeight: homeIsHighlighted ? 900 : undefined,
+                        }}
                     >
                         {match.home}
                     </span>
@@ -62,7 +77,12 @@ export default function MatchCard({ match }) {
             </div>
 
             {/* Visitante */}
-            <div className="flex items-center justify-between gap-3">
+            <div
+                className="flex items-center justify-between gap-3 rounded-xl px-2 py-1 transition-colors duration-200"
+                style={{
+                    backgroundColor: awayIsHighlighted ? "#A9000010" : "transparent",
+                }}
+            >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span
                         className="text-xs font-black px-1.5 py-0.5 rounded shrink-0"
@@ -75,7 +95,14 @@ export default function MatchCard({ match }) {
                     )}
                     <span
                         className="text-sm font-bold uppercase tracking-wide truncate"
-                        style={{ color: awayWon ? theme.textPrimary : theme.textSecondary }}
+                        style={{
+                            color: awayIsHighlighted
+                                ? "#A90000"
+                                : awayWon
+                                    ? theme.textPrimary
+                                    : theme.textSecondary,
+                            fontWeight: awayIsHighlighted ? 900 : undefined,
+                        }}
                     >
                         {match.away}
                     </span>

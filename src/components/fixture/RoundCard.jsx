@@ -1,12 +1,27 @@
 import { useTheme } from "../../context/ThemeContext";
 import MatchCard from "./MatchCard";
 
+// 1ª Fecha = 08/03/2026, cada domingo siguiente
+const ROUND_START_DATE = new Date(2026, 2, 8); // March 8, 2026
+
+export function getRoundDate(roundNumber) {
+    const date = new Date(ROUND_START_DATE);
+    date.setDate(date.getDate() + (roundNumber - 1) * 7);
+    return date.toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+    });
+}
+
 export default function RoundCard({ round, isSelected, onClick }) {
     const { theme } = useTheme();
     const totalMatches = round.matches.length;
     const playedMatches = round.matches.filter((m) => m.result !== null).length;
     const allDone = playedMatches === totalMatches;
     const hasAny = playedMatches > 0;
+
+    const roundDate = getRoundDate(round.round);
 
     return (
         <div
@@ -33,12 +48,20 @@ export default function RoundCard({ round, isSelected, onClick }) {
                                     : theme.border,
                         }}
                     />
-                    <span
-                        className="font-black uppercase tracking-wider text-sm"
-                        style={{ color: theme.textPrimary }}
-                    >
-                        {round.label}
-                    </span>
+                    <div className="flex flex-col items-start">
+                        <span
+                            className="font-black uppercase tracking-wider text-sm"
+                            style={{ color: theme.textPrimary }}
+                        >
+                            {round.label}
+                        </span>
+                        <span
+                            className="text-xs font-medium"
+                            style={{ color: theme.textMuted }}
+                        >
+                            {roundDate}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">
