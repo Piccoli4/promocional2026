@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
+import { teamLogos, teamShortNames } from "../../data/teamLogos";
 
 export default function StandingsMini({ standings, loading }) {
     const { theme } = useTheme();
