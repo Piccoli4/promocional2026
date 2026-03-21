@@ -6,7 +6,7 @@ export default function StandingsMini({ standings, loading }) {
     const { theme } = useTheme();
     if (loading) return null;
 
-    const topTeams = standings.slice(0, 6);
+    const topTeams = standings.slice(0, 8);
 
     return (
         <div className="flex flex-col gap-4">
