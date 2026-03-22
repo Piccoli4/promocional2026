@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import LastRoundResults from "../components/fixture/LastRoundResults";
@@ -6,12 +7,31 @@ import StandingsMini from "../components/standings/StandingsMini";
 import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
 import { useTheme } from "../context/ThemeContext";
+import { requestNotificationPermission } from "../services/messaging";
 import logo from "../assets/UyP.png";
 
 export default function Home() {
     const { fixtureWithResults, loading: fixtureLoading } = useFixture();
     const { standings, loading: standingsLoading } = useStandings();
     const { theme } = useTheme();
+    const [notifStatus, setNotifStatus] = useState("idle"); // idle | loading | granted | denied
+
+    // Verificar si ya tiene permiso al cargar
+    useEffect(() => {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === "granted") setNotifStatus("granted");
+        if (Notification.permission === "denied") setNotifStatus("denied");
+    }, []);
+
+    const handleSubscribe = async () => {
+        setNotifStatus("loading");
+        const token = await requestNotificationPermission();
+        if (token) {
+            setNotifStatus("granted");
+        } else {
+            setNotifStatus("denied");
+        }
+    };
 
     const lastPlayedRound = [...fixtureWithResults]
         .reverse()
@@ -63,10 +83,7 @@ export default function Home() {
                             <Link
                                 to="/tabla"
                                 className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200"
-                                style={{
-                                    backgroundColor: "#A90000",
-                                    color: "#ffffff",
-                                }}
+                                style={{ backgroundColor: "#A90000", color: "#ffffff" }}
                             >
                                 Ver Tabla
                             </Link>
@@ -81,6 +98,33 @@ export default function Home() {
                             >
                                 Ver Fixture
                             </Link>
+
+                            {/* Botón notificaciones — solo si el browser lo soporta */}
+                            {'Notification' in window && notifStatus !== "granted" && (
+                                <button
+                                    onClick={handleSubscribe}
+                                    disabled={notifStatus === "loading" || notifStatus === "denied"}
+                                    className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200 disabled:opacity-50"
+                                    style={{
+                                        backgroundColor: "transparent",
+                                        border: `1px solid ${theme.borderHeroBtn}`,
+                                        color: theme.textHeroBtn,
+                                    }}
+                                >
+                                    {notifStatus === "loading" ? "..." :
+                                     notifStatus === "denied" ? "🔕 Bloqueadas" :
+                                     "🔔 Activar alertas"}
+                                </button>
+                            )}
+
+                            {notifStatus === "granted" && (
+                                <span
+                                    className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide"
+                                    style={{ color: theme.textGreen }}
+                                >
+                                    🔔 Alertas activas
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>

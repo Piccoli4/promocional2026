@@ -27,6 +27,19 @@ export default function MatchResultForm({ match }) {
         try {
             await saveResult(match.id, homeScore, awayScore);
             showFeedback("saved");
+
+            // Enviar notificación push a todos los suscriptos
+            await fetch('/api/send-notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-internal-key': import.meta.env.VITE_INTERNAL_FUNCTION_KEY,
+                },
+                body: JSON.stringify({
+                    title: '🏀 Resultado cargado',
+                    body: `${match.home} ${homeScore} - ${awayScore} ${match.away}`,
+                }),
+            });
         } catch (err) {
             console.error(err);
             showFeedback("error");
