@@ -17,12 +17,18 @@ function ProtectedRoute({ children }) {
   return isAdmin ? children : <Navigate to="/login" replace />;
 }
 
+// Si el admin abre la app desde el ícono (start_url = "/"), lo manda al panel
+function HomeOrAdmin() {
+  const { isAdmin } = useAuth();
+  return isAdmin ? <Navigate to="/admin" replace /> : <Home />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Rutas públicas */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomeOrAdmin />} />
         <Route path="/tabla" element={<Standings />} />
         <Route path="/fixture" element={<Fixture />} />
         <Route path="/login" element={<Login />} />
