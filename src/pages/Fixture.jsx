@@ -10,7 +10,7 @@ import { useTheme } from "../context/ThemeContext";
 export default function Fixture() {
     const { fixtureWithResults, loading } = useFixture();
     const { theme } = useTheme();
-    const [selectedRound, setSelectedRound] = useState(1);
+    const [selectedRound, setSelectedRound] = useState(null);
     const [selectedTeam, setSelectedTeam] = useState(null);
 
     const handleRoundClick = (round) => {

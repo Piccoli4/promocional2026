@@ -1,12 +1,13 @@
 import { useTheme } from "../../context/ThemeContext";
 import MatchCard from "./MatchCard";
 
-// 1ª Fecha = 08/03/2026, cada domingo siguiente
-const ROUND_START_DATE = new Date(2026, 2, 8); // March 8, 2026
+// 1ª Fecha = 08/03/2026 — Fecha 5 en adelante se corre una semana (05/04 suspendida)
+const ROUND_START_DATE = new Date(2026, 2, 8); // 8 de marzo 2026
 
 export function getRoundDate(roundNumber) {
     const date = new Date(ROUND_START_DATE);
-    date.setDate(date.getDate() + (roundNumber - 1) * 7);
+    const weeksOffset = roundNumber >= 5 ? roundNumber : roundNumber - 1;
+    date.setDate(date.getDate() + weeksOffset * 7);
     return date.toLocaleDateString("es-AR", {
         day: "2-digit",
         month: "2-digit",
