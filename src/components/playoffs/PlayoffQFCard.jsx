@@ -30,9 +30,7 @@ function TeamRow({ team, seed, score, isWinner, isLoser, isHome }) {
         >
             <div className="flex items-center gap-2 flex-1 min-w-0">
                 <SeedBadge seed={seed} isWinner={isWinner} />
-                {logo && (
-                    <img src={logo} alt={team} className="w-6 h-6 object-contain shrink-0" />
-                )}
+                {logo && <img src={logo} alt={team} className="w-6 h-6 object-contain shrink-0" />}
                 <div className="flex flex-col min-w-0">
                     {team ? (
                         <>
@@ -76,7 +74,7 @@ function TeamRow({ team, seed, score, isWinner, isLoser, isHome }) {
     );
 }
 
-export default function PlayoffQFCard({ qf }) {
+export default function PlayoffQFCard({ qf, date }) {
     const { theme } = useTheme();
     const { home, homeSeed, away, awaySeed, result, winner } = qf;
 
@@ -94,6 +92,18 @@ export default function PlayoffQFCard({ qf }) {
                 boxShadow: theme.shadowCard,
             }}
         >
+            {/* Fecha */}
+            {date && (
+                <div className="flex items-center justify-end mb-0.5">
+                    <span
+                        className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: theme.border, color: theme.textMuted }}
+                    >
+                        📅 {date}
+                    </span>
+                </div>
+            )}
+
             {winner && (
                 <div
                     className="text-xs font-bold uppercase tracking-widest text-center py-1 rounded-lg mb-1"
@@ -103,14 +113,7 @@ export default function PlayoffQFCard({ qf }) {
                 </div>
             )}
 
-            <TeamRow
-                team={home}
-                seed={homeSeed}
-                score={homeScore}
-                isWinner={homeWon}
-                isLoser={awayWon}
-                isHome={true}
-            />
+            <TeamRow team={home} seed={homeSeed} score={homeScore} isWinner={homeWon} isLoser={awayWon} isHome={true} />
 
             <div className="flex items-center gap-2 px-3">
                 <div className="flex-1 h-px" style={{ backgroundColor: theme.border }} />
@@ -118,20 +121,10 @@ export default function PlayoffQFCard({ qf }) {
                 <div className="flex-1 h-px" style={{ backgroundColor: theme.border }} />
             </div>
 
-            <TeamRow
-                team={away}
-                seed={awaySeed}
-                score={awayScore}
-                isWinner={awayWon}
-                isLoser={homeWon}
-                isHome={false}
-            />
+            <TeamRow team={away} seed={awaySeed} score={awayScore} isWinner={awayWon} isLoser={homeWon} isHome={false} />
 
             {!result && (
-                <p
-                    className="text-center text-xs mt-1 py-1"
-                    style={{ color: theme.textMuted }}
-                >
+                <p className="text-center text-xs mt-1 py-1" style={{ color: theme.textMuted }}>
                     Pendiente
                 </p>
             )}

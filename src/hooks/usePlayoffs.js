@@ -36,16 +36,18 @@ export function usePlayoffs() {
         return () => unsubscribe();
     }, []);
 
-    const top8 = useMemo(() => standings.slice(0, 8), [standings]);
+    const top12 = useMemo(() => standings.slice(0, 12), [standings]);
+    const top8   = useMemo(() => top12.slice(0, 8),     [top12]);
 
     const bracket = useMemo(
-        () => computeBracket(top8, playoffResults),
-        [top8, playoffResults]
+        () => computeBracket(top12, playoffResults),
+        [top12, playoffResults]
     );
 
     return {
         bracket,
         top8,
+        top12,
         playoffResults,
         loading: loading || standingsLoading,
         error,
