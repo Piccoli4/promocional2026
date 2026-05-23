@@ -9,7 +9,7 @@ export default function StandingsTable({ standings, loading }) {
     // En mobile: sin columnas DF y PF → más espacio para el nombre
     const gridCols = isMobile
         ? "1.8rem 1fr 2.2rem 2.2rem 2.2rem 2.8rem"
-        : "2rem 1fr 2.5rem 2.5rem 2.5rem 2.5rem 3rem 3rem";
+        : "2rem 1fr 2.5rem 2.5rem 2.5rem 2.5rem 3rem 3rem 3rem";
 
     if (loading) {
         return (
@@ -43,6 +43,7 @@ export default function StandingsTable({ standings, loading }) {
                 <span className="text-center">PP</span>
                 {!isMobile && <span className="text-center">DF</span>}
                 {!isMobile && <span className="text-center">PF</span>}
+                {!isMobile && <span className="text-center">PC</span>}
                 <span className="text-center" style={{ color: "#ffffffaa" }}>PTS</span>
             </div>
 
@@ -130,6 +131,11 @@ export default function StandingsTable({ standings, loading }) {
                                 {entry.pointsFor}
                             </span>
                         )}
+                        {!isMobile && (
+                            <span className="text-center text-xs" style={{ color: theme.textMuted }}>
+                                {entry.pointsAgainst}
+                            </span>
+                        )}
 
                         {/* Puntos */}
                         <div className="flex justify-center">
@@ -166,6 +172,7 @@ export default function StandingsTable({ standings, loading }) {
                     <span>PP: Perdidos</span>
                     {!isMobile && <span>DF: Diferencia</span>}
                     {!isMobile && <span>PF: Pts. favor</span>}
+                    {!isMobile && <span>PC: Pts. contra</span>}
                     <span>PTS: Tabla</span>
                 </div>
             </div>
