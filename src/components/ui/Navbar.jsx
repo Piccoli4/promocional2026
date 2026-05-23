@@ -8,6 +8,7 @@ const navLinks = [
     { to: "/", label: "Inicio" },
     { to: "/tabla", label: "Tabla" },
     { to: "/fixture", label: "Fixture" },
+    { to: "/playoffs", label: "Playoffs" },
 ];
 
 function ThemeToggleButton({ isDark, toggleTheme, theme }) {

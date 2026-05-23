@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 import Home from "./pages/Home";
 import Standings from "./pages/Standings";
 import Fixture from "./pages/Fixture";
+import Playoffs from "./pages/Playoffs";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/" element={<HomeOrAdmin />} />
         <Route path="/tabla" element={<Standings />} />
         <Route path="/fixture" element={<Fixture />} />
+        <Route path="/playoffs" element={<Playoffs />} />
         <Route path="/login" element={<Login />} />
 
         {/* Ruta protegida — solo admin */}

@@ -4,8 +4,10 @@ import Layout from "../components/ui/Layout";
 import LastRoundResults from "../components/fixture/LastRoundResults";
 import NextRound from "../components/fixture/NextRound";
 import StandingsMini from "../components/standings/StandingsMini";
+import PlayoffMini from "../components/playoffs/PlayoffMini";
 import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
+import { usePlayoffs } from "../hooks/usePlayoffs";
 import { useTheme } from "../context/ThemeContext";
 import { requestNotificationPermission } from "../services/messaging";
 import logo from "../assets/UyP.png";
@@ -13,6 +15,7 @@ import logo from "../assets/UyP.png";
 export default function Home() {
     const { fixtureWithResults, loading: fixtureLoading } = useFixture();
     const { standings, loading: standingsLoading } = useStandings();
+    const { bracket, loading: playoffsLoading } = usePlayoffs();
     const { theme } = useTheme();
     const [notifStatus, setNotifStatus] = useState("idle"); // idle | loading | granted | denied
 
@@ -44,6 +47,10 @@ export default function Home() {
     const tournamentStarted = fixtureWithResults.some((r) =>
         r.matches.some((m) => m.result !== null)
     );
+
+    // ¿La fase regular terminó? (todas las fechas tienen resultados en todos los partidos)
+    const regularPhaseOver = fixtureWithResults.length > 0 &&
+        fixtureWithResults.every((r) => r.matches.every((m) => m.result !== null));
 
     return (
         <Layout>
@@ -77,7 +84,9 @@ export default function Home() {
                             Torneo Promocional 2026
                         </h1>
                         <p className="text-sm" style={{ color: theme.textHeroDesc }}>
-                            Fase Clasificatoria · 12 equipos · 11 fechas
+                            {regularPhaseOver
+                                ? "Fase Regular finalizada · Playoffs en curso"
+                                : "Fase Clasificatoria · 12 equipos · 11 fechas"}
                         </p>
                         <div className="flex gap-3 mt-2 justify-center sm:justify-start flex-wrap">
                             <Link
@@ -86,6 +95,17 @@ export default function Home() {
                                 style={{ backgroundColor: "#A90000", color: "#ffffff" }}
                             >
                                 Ver Tabla
+                            </Link>
+                            <Link
+                                to="/playoffs"
+                                className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200"
+                                style={{
+                                    backgroundColor: "transparent",
+                                    border: `1px solid ${theme.borderHeroBtn}`,
+                                    color: theme.textHeroBtn,
+                                }}
+                            >
+                                🏆 Playoffs
                             </Link>
                             <Link
                                 to="/fixture"
@@ -153,11 +173,17 @@ export default function Home() {
                 {tournamentStarted && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div className="flex flex-col gap-8">
-                            {!fixtureLoading && lastPlayedRound && (
+                            {/* Última fecha jugada (fase regular) */}
+                            {!fixtureLoading && lastPlayedRound && !regularPhaseOver && (
                                 <LastRoundResults round={lastPlayedRound} />
                             )}
+                            {/* Próxima fecha (fase regular) */}
                             {!fixtureLoading && nextRound && (
                                 <NextRound round={nextRound} />
+                            )}
+                            {/* Playoffs mini */}
+                            {!playoffsLoading && (
+                                <PlayoffMini bracket={bracket} loading={playoffsLoading} />
                             )}
                         </div>
                         <div>
