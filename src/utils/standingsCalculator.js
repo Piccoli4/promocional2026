@@ -1,5 +1,8 @@
 import { TEAMS } from "../data/fixture";
 
+// Partidos ganados por sanción: el equipo perdedor no suma punto
+const FORFEIT_MATCHES = new Set(["2-1", "2-2"]);
+
 /**
  * Genera una entrada vacía para un equipo en la tabla
  */
@@ -60,18 +63,20 @@ export function calculateStandings(results = {}, fixture = []) {
             away.pointsAgainst += homeScore;
 
             // En básquet no hay empates
+            const isForfeit = FORFEIT_MATCHES.has(match.id);
+
             if (homeScore > awayScore) {
                 // Ganó el local
                 home.won += 1;
                 home.points += 2;
                 away.lost += 1;
-                away.points += 1;
+                away.points += isForfeit ? 0 : 1;
             } else {
                 // Ganó el visitante
                 away.won += 1;
                 away.points += 2;
                 home.lost += 1;
-                home.points += 1;
+                home.points += isForfeit ? 0 : 1;
             }
         });
     });
