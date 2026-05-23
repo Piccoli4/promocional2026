@@ -67,7 +67,7 @@ export default function Admin() {
                 {/* Tabs: Fase Regular / Playoffs */}
                 <div className="flex gap-2">
                     {[
-                        { id: "regular", label: "⚽ Fase Regular" },
+                        { id: "regular", label: "🏀 Fase Regular" },
                         { id: "playoffs", label: "🏆 Playoffs" },
                     ].map((tab) => {
                         const isActive = activeTab === tab.id;

@@ -18,10 +18,9 @@ function ProtectedRoute({ children }) {
   return isAdmin ? children : <Navigate to="/login" replace />;
 }
 
-// Si el admin abre la app desde el ícono (start_url = "/"), lo manda al panel
+// Para simplificar, Home y Admin comparten la misma ruta. En una app real, podrías querer rutas separadas o un dashboard.
 function HomeOrAdmin() {
-  const { isAdmin } = useAuth();
-  return isAdmin ? <Navigate to="/admin" replace /> : <Home />;
+  return <Home />;
 }
 
 export default function App() {
