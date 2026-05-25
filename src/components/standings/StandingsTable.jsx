@@ -89,14 +89,29 @@ export default function StandingsTable({ standings, loading }) {
                                 >
                                     {isMobile ? shortName : entry.team}
                                 </span>
-                                {isTop && (
-                                    <span
-                                        className="font-semibold"
-                                        style={{ color: "#A90000aa", fontSize: "0.6rem" }}
-                                    >
-                                        Clasifica
-                                    </span>
-                                )}
+                                <div className="flex items-center gap-1.5">
+                                    {isTop && (
+                                        <span
+                                            className="font-semibold"
+                                            style={{ color: "#A90000aa", fontSize: "0.6rem" }}
+                                        >
+                                            Clasifica
+                                        </span>
+                                    )}
+                                    {entry.sanction > 0 && (
+                                        <span
+                                            className="font-bold rounded px-1"
+                                            style={{
+                                                fontSize: "0.55rem",
+                                                color: "#f59e0b",
+                                                backgroundColor: "#f59e0b18",
+                                                letterSpacing: "0.03em",
+                                            }}
+                                        >
+                                            -{entry.sanction} pts
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

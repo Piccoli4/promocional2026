@@ -1,42 +1,35 @@
 import { TEAMS } from "../data/fixture";
 
-// Partidos ganados por sanción: el equipo perdedor no suma punto
-const FORFEIT_MATCHES = new Set(["2-1", "2-2"]);
+// Sanciones de puntos por equipo (se restan al total final)
+const TEAM_SANCTIONS = {
+    "CENTRAL RINCÓN": 2,
+    "U. Y PROGRESO A": 1,
+    "U. Y PROGRESO B": 1,
+};
 
-/**
- * Genera una entrada vacía para un equipo en la tabla
- */
 const createEmptyEntry = (team) => ({
     team,
     played: 0,
     won: 0,
     lost: 0,
-    pointsFor: 0,  // Puntos a favor
-    pointsAgainst: 0, // Puntos en contra
-    pointsDiff: 0,  // Diferencia de puntos
-    points: 0,  // Puntos en la tabla (2 por victoria, 1 por derrota)
+    pointsFor: 0,
+    pointsAgainst: 0,
+    pointsDiff: 0,
+    points: 0,
 });
 
-/**
- * Calcula la tabla de posiciones a partir de los resultados cargados.
- * @param {Object} results - Objeto con los resultados de Firebase.
- *                           Formato: { "1-1": { homeScore: 80, awayScore: 70 }, ... }
- * @param {Array}  fixture - El fixture completo con todos los partidos.
- * @returns {Array} - Tabla de posiciones ordenada.
- */
 export function calculateStandings(results = {}, fixture = []) {
-    // Inicializamos la tabla con todos los equipos en cero
     const table = {};
     TEAMS.forEach((team) => {
         table[team] = createEmptyEntry(team);
     });
 
-    // Recorremos todas las fechas y partidos
+    const headToHead = {};
+
     fixture.forEach((round) => {
         round.matches.forEach((match) => {
             const result = results[match.id];
 
-            // Si el partido no tiene resultado cargado, lo saltamos
             if (
                 !result ||
                 result.homeScore === null ||
@@ -52,55 +45,83 @@ export function calculateStandings(results = {}, fixture = []) {
             const home = table[match.home];
             const away = table[match.away];
 
-            // Actualizamos partidos jugados
             home.played += 1;
             away.played += 1;
 
-            // Actualizamos puntos a favor y en contra
             home.pointsFor += homeScore;
             home.pointsAgainst += awayScore;
             away.pointsFor += awayScore;
             away.pointsAgainst += homeScore;
 
-            // En básquet no hay empates
-            const isForfeit = FORFEIT_MATCHES.has(match.id);
-
             if (homeScore > awayScore) {
-                // Ganó el local
                 home.won += 1;
                 home.points += 2;
                 away.lost += 1;
-                away.points += isForfeit ? 0 : 1;
+                away.points += 1;
+
+                if (!headToHead[match.home]) headToHead[match.home] = {};
+                headToHead[match.home][match.away] = true;
             } else {
-                // Ganó el visitante
                 away.won += 1;
                 away.points += 2;
                 home.lost += 1;
-                home.points += isForfeit ? 0 : 1;
+                home.points += 1;
+
+                if (!headToHead[match.away]) headToHead[match.away] = {};
+                headToHead[match.away][match.home] = true;
             }
         });
     });
 
-    // Convertimos el objeto en array y calculamos la diferencia
     const standings = Object.values(table).map((entry) => ({
         ...entry,
         pointsDiff: entry.pointsFor - entry.pointsAgainst,
+        sanction: TEAM_SANCTIONS[entry.team] ?? 0,
     }));
 
-    // Ordenamos la tabla
+    // Aplicamos sanciones
+    standings.forEach((entry) => {
+        if (entry.sanction > 0) {
+            entry.points -= entry.sanction;
+        }
+    });
+
+    // Sort: puntos → ganados → diferencia → puntos a favor
     standings.sort((a, b) => {
-        // 1° criterio: puntos en la tabla
         if (b.points !== a.points) return b.points - a.points;
-
-        // 2° criterio: partidos ganados
         if (b.won !== a.won) return b.won - a.won;
-
-        // 3° criterio: diferencia de puntos
         if (b.pointsDiff !== a.pointsDiff) return b.pointsDiff - a.pointsDiff;
-
-        // 4° criterio: puntos a favor
         return b.pointsFor - a.pointsFor;
     });
 
-    return standings;
+    // Post-procesamiento: partido entre sí para grupos de exactamente 2 empatados
+    const final = [];
+    let i = 0;
+    while (i < standings.length) {
+        let j = i + 1;
+        while (
+            j < standings.length &&
+            standings[j].points === standings[i].points &&
+            standings[j].won === standings[i].won
+        ) {
+            j++;
+        }
+
+        const group = standings.slice(i, j);
+
+        if (group.length === 2) {
+            const [a, b] = group;
+            if (headToHead[b.team]?.[a.team]) {
+                final.push(b, a);
+            } else {
+                final.push(a, b);
+            }
+        } else {
+            final.push(...group);
+        }
+
+        i = j;
+    }
+
+    return final;
 }
