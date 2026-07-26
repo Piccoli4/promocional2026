@@ -1,36 +1,22 @@
-import { useTheme } from "../../context/ThemeContext";
 import MatchCard from "./MatchCard";
-import { getRoundDate } from "./RoundCard";
+import { SectionTitle, Chip } from "../ui/Primitives";
+import { formatDateLong } from "../../data/fixture";
 
 export default function LastRoundResults({ round }) {
-    const { theme } = useTheme();
     if (!round) return null;
 
-    const roundDate = getRoundDate(round.round);
-
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                    <h2 className="text-lg font-black uppercase tracking-wider" style={{ color: theme.textPrimary }}>
-                        {round.label}
-                    </h2>
-                    <span className="text-xs font-medium" style={{ color: theme.textMuted }}>
-                        {roundDate}
-                    </span>
-                </div>
-                <span
-                    className="text-xs px-3 py-1 rounded-full font-semibold"
-                    style={{ backgroundColor: theme.textGreen + "22", color: theme.textGreen }}
-                >
-                    Última jugada
-                </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {round.matches.map((match) => (
-                    <MatchCard key={match.id} match={match} />
+        <section className="flex flex-col gap-4">
+            <SectionTitle
+                eyebrow={formatDateLong(round.date)}
+                title={round.label}
+                right={<Chip tone="ok">Última jugada</Chip>}
+            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {round.matches.map((match, i) => (
+                    <MatchCard key={match.id} match={match} delay={i * 50} />
                 ))}
             </div>
-        </div>
+        </section>
     );
 }

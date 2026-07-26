@@ -1,140 +1,84 @@
 import { Link } from "react-router-dom";
-import { useTheme } from "../../context/ThemeContext";
-import { teamLogos, teamShortNames } from "../../data/teamLogos";
+import TeamLogo from "../ui/TeamLogo";
+import { SectionTitle, Chip, Spinner } from "../ui/Primitives";
+import { zoneOf } from "../../data/playoffs";
+import { teamShortNames } from "../../data/teamLogos";
 
-export default function StandingsMini({ standings, loading }) {
-    const { theme } = useTheme();
-    if (loading) return null;
-
-    const topTeams = standings.slice(0, 8);
-
+export default function StandingsMini({ standings, loading, limit = 12 }) {
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-black uppercase tracking-wider" style={{ color: theme.textPrimary }}>
-                    Tabla de Posiciones
-                </h2>
-                <Link
-                    to="/tabla"
-                    className="text-xs font-bold uppercase tracking-wider transition-colors duration-200"
-                    style={{ color: "#A90000" }}
-                >
-                    Ver completa →
-                </Link>
-            </div>
+        <section className="flex flex-col gap-4">
+            <SectionTitle
+                eyebrow="Zona única"
+                title="Posiciones"
+                right={
+                    <Link to="/tabla" className="nm-btn px-4 py-2 text-xs">
+                        Ver todo
+                    </Link>
+                }
+            />
 
-            <div
-                className="rounded-2xl overflow-hidden"
-                style={{ border: `1px solid ${theme.border}`, boxShadow: theme.shadowCard }}
-            >
-                {/* Header */}
-                <div
-                    className="grid text-xs font-black uppercase tracking-widest px-3 py-2"
-                    style={{
-                        backgroundColor: theme.bgTableHead,
-                        color: "#ffffff55",
-                        gridTemplateColumns: "1.8rem 1fr 2.2rem 2.2rem 2.2rem 2.8rem",
-                    }}
-                >
-                    <span className="text-center">#</span>
-                    <span>Equipo</span>
-                    <span className="text-center">PJ</span>
-                    <span className="text-center">PG</span>
-                    <span className="text-center">PP</span>
-                    <span className="text-center">PTS</span>
-                </div>
+            <div className="nm nm-edge p-2 sm:p-3">
+                {loading ? (
+                    <Spinner size={32} />
+                ) : (
+                    <div className="flex flex-col gap-0.5">
+                        {standings.slice(0, limit).map((entry, i) => {
+                            const position = i + 1;
+                            const zone = zoneOf(position);
 
-                {/* Filas */}
-                {topTeams.map((entry, index) => {
-                    const position = index + 1;
-                    const isTop = position <= 8;
-                    const isEven = index % 2 === 0;
-                    const logo = teamLogos[entry.team];
-                    const shortName = teamShortNames[entry.team] ?? entry.team;
-
-                    return (
-                        <div
-                            key={entry.team}
-                            className="grid items-center px-3 py-2.5"
-                            style={{
-                                gridTemplateColumns: "1.8rem 1fr 2.2rem 2.2rem 2.2rem 2.8rem",
-                                backgroundColor: isEven ? theme.bgRow1 : theme.bgRow2,
-                                borderLeft: `3px solid ${isTop ? "#A90000" : "transparent"}`,
-                            }}
-                        >
-                            <span
-                                className="text-center text-xs font-black"
-                                style={{ color: isTop ? "#A90000" : theme.textMuted }}
-                            >
-                                {position}
-                            </span>
-                            <span
-                                className="text-xs font-bold uppercase tracking-wide truncate"
-                                style={{ color: theme.textPrimary }}
-                            >
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                    {logo && (
-                                        <img
-                                            src={logo}
-                                            alt={entry.team}
-                                            className="w-5 h-5 object-contain flex-shrink-0"
-                                        />
-                                    )}
-                                    <span
-                                        className="block sm:hidden text-xs font-bold uppercase tracking-wide"
-                                        style={{ color: theme.textPrimary }}
-                                    >
-                                        {shortName}
-                                    </span>
-                                    <span
-                                        className="hidden sm:block text-xs font-bold uppercase tracking-wide truncate"
-                                        style={{ color: theme.textPrimary }}
-                                    >
-                                        {entry.team}
-                                    </span>
-                                </div>
-                            </span>
-                            <span className="text-center text-xs" style={{ color: theme.textSecondary }}>
-                                {entry.played}
-                            </span>
-                            <span className="text-center text-xs font-semibold" style={{ color: theme.textGreen }}>
-                                {entry.won}
-                            </span>
-                            <span className="text-center text-xs" style={{ color: theme.textRed }}>
-                                {entry.lost}
-                            </span>
-                            <div className="flex justify-center">
-                                <span
-                                    className="text-xs font-black px-1.5 py-0.5 rounded-lg text-center"
+                            return (
+                                <div
+                                    key={entry.team}
+                                    className="a-slide grid items-center gap-2 rounded-2xl px-2 py-2"
                                     style={{
-                                        backgroundColor: entry.played > 0 ? "#A9000022" : "transparent",
-                                        color: entry.played > 0 ? "#A90000" : theme.textMuted,
+                                        gridTemplateColumns: "2.2rem minmax(0,1fr) 2rem 2.6rem",
+                                        "--d": `${i * 40}ms`,
                                     }}
                                 >
-                                    {entry.points}
-                                </span>
-                            </div>
-                        </div>
-                    );
-                })}
+                                    <span className="flex items-center gap-1.5">
+                                        <span
+                                            className="h-6 w-1 shrink-0 rounded-full"
+                                            style={{ background: zone.color }}
+                                        />
+                                        <span
+                                            className="tabular text-sm"
+                                            style={{
+                                                color: position <= 4 ? "var(--gold)" : "var(--text-2)",
+                                            }}
+                                        >
+                                            {position}
+                                        </span>
+                                    </span>
 
-                {/* Footer */}
-                <div
-                    className="px-3 py-2 text-center"
-                    style={{
-                        backgroundColor: theme.bgTableFoot,
-                        borderTop: "1px solid #ffffff10",
-                    }}
-                >
-                    <Link
-                        to="/tabla"
-                        className="text-xs uppercase tracking-widest font-semibold"
-                        style={{ color: "#ffffff55" }}
-                    >
-                        Ver los 12 equipos →
-                    </Link>
-                </div>
+                                    <span className="flex min-w-0 items-center gap-2">
+                                        <TeamLogo team={entry.team} size={24} />
+                                        <span
+                                            className="cond truncate text-[0.82rem] font-bold uppercase tracking-wide"
+                                            style={{ color: "var(--text-1)" }}
+                                        >
+                                            {teamShortNames[entry.team] ?? entry.team}
+                                        </span>
+                                    </span>
+
+                                    <span
+                                        className="tabular text-center text-xs"
+                                        style={{ color: "var(--text-3)" }}
+                                    >
+                                        {entry.played}
+                                    </span>
+
+                                    <span
+                                        className="tabular text-center text-base"
+                                        style={{ color: "var(--red)" }}
+                                    >
+                                        {entry.points}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-        </div>
+        </section>
     );
 }

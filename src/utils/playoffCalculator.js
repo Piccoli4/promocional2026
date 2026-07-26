@@ -1,279 +1,514 @@
 /**
- * playoffCalculator.js
- * Calcula el estado completo del bracket de playoffs.
+ * playoffCalculator.js — Fase Final del Torneo Oficial Promocional 2026.
  *
- * Estructura:
- * ─ CUARTOS (1 partido):           1vs8, 4vs5, 2vs7, 3vs6
- * ─ SEMIFINALES 1°–4° (IDA/VUELTA/TERCERO): S1vsS4, S2vsS3
- * ─ SEMIFINALES 5°–8° (1 partido): L4vsL1, L3vsL2
- * ─ POSICIONES:                    7°y8°, 5°y6°, 3°y4°, FINAL (IDA/VUELTA/TERCERO)
- * ─ REPOSICIONAMIENTO (round-robin 4 equipos, 3 jornadas): 9°–12°
- */
-
-function gameWinner(result, homeTeam, awayTeam) {
-    if (!result || homeTeam === null || awayTeam === null) return null;
-    return Number(result.homeScore) > Number(result.awayScore) ? homeTeam : awayTeam;
-}
-
-function gameLoser(result, homeTeam, awayTeam) {
-    if (!result || homeTeam === null || awayTeam === null) return null;
-    return Number(result.homeScore) > Number(result.awayScore) ? awayTeam : homeTeam;
-}
-
-function gameWinnerSeed(result, homeSeed, awaySeed) {
-    if (!result) return null;
-    return Number(result.homeScore) > Number(result.awayScore) ? homeSeed : awaySeed;
-}
-
-function gameLoserSeed(result, homeSeed, awaySeed) {
-    if (!result) return null;
-    return Number(result.homeScore) > Number(result.awayScore) ? awaySeed : homeSeed;
-}
-
-/**
- * Calcula el estado de una serie IDA/VUELTA/TERCERO (mejor de 3 por partidos ganados).
- * teamA siempre tiene localía en IDA y TERCERO.
- * En VUELTA, teamB es local → homeScore = teamB.
- */
-function seriesState(teamA, seedA, teamB, seedB, g1, g2, g3) {
-    let winsA = 0, winsB = 0;
-
-    // IDA: teamA local → homeScore = teamA
-    if (g1 && teamA && teamB) {
-        Number(g1.homeScore) > Number(g1.awayScore) ? winsA++ : winsB++;
-    }
-    // VUELTA: teamB local → homeScore = teamB
-    if (g2 && teamA && teamB) {
-        Number(g2.homeScore) > Number(g2.awayScore) ? winsB++ : winsA++;
-    }
-    // TERCERO: teamA local → homeScore = teamA
-    if (g3 && teamA && teamB) {
-        Number(g3.homeScore) > Number(g3.awayScore) ? winsA++ : winsB++;
-    }
-
-    const seriesWinner = winsA >= 2 ? teamA : (winsB >= 2 ? teamB : null);
-    const seriesWinnerSeed = seriesWinner === teamA ? seedA : (seriesWinner ? seedB : null);
-    const seriesLoser = seriesWinner ? (seriesWinner === teamA ? teamB : teamA) : null;
-    const needsG3 = winsA === 1 && winsB === 1 && !g3;
-    const seriesOver = winsA >= 2 || winsB >= 2;
-
-    return { winsA, winsB, seriesWinner, seriesWinnerSeed, seriesLoser, needsG3, seriesOver };
-}
-
-/**
- * Calcula standings del reposicionamiento (round-robin 9°–12°).
- */
-function computeRepoStandings(teams, matches) {
-    const stats = {};
-    teams.forEach((t) => {
-        if (t?.team) stats[t.team] = { team: t.team, pj: 0, w: 0, l: 0, gf: 0, gc: 0 };
-    });
-
-    matches.forEach((m) => {
-        if (!m.result || !m.home || !m.away) return;
-        const hs = Number(m.result.homeScore);
-        const as_ = Number(m.result.awayScore);
-        if (stats[m.home]) {
-            stats[m.home].pj++;
-            stats[m.home].gf += hs;
-            stats[m.home].gc += as_;
-            if (hs > as_) stats[m.home].w++;
-            else stats[m.home].l++;
-        }
-        if (stats[m.away]) {
-            stats[m.away].pj++;
-            stats[m.away].gf += as_;
-            stats[m.away].gc += hs;
-            if (as_ > hs) stats[m.away].w++;
-            else stats[m.away].l++;
-        }
-    });
-
-    return Object.values(stats).sort((a, b) => {
-        const wDiff = b.w - a.w;
-        if (wDiff !== 0) return wDiff;
-        return (b.gf - b.gc) - (a.gf - a.gc);
-    });
-}
-
-/**
- * Computa el bracket completo a partir de las primeras 12 posiciones y
- * los resultados de playoffs guardados en Firestore.
+ * Estructura (reglamento ASB):
+ *   1°–4°  clasifican directo a Cuartos.
+ *   5°–12° juegan PLAY IN: 5v12, 6v11, 7v10, 8v9 — series al mejor de 3 (1-1-1).
+ *          Los 4 ganadores entran a la Fase Campeonato como 5° a 8°.
+ *          Los 4 perdedores juegan el Reposicionamiento 9°–12° (round robin).
+ *   CUARTOS   1v8, 2v7, 3v6, 4v5 — al mejor de 3 (1-1-1).
+ *   SEMIS     reordenamiento: 1v4, 2v3 — al mejor de 3 (1-1-1).
+ *   FINAL     1v2 — al mejor de 3 (1-1-1). Tercer puesto a un juego.
+ *   5°–8°     los 4 perdedores de Cuartos, a un juego: 5v8 y 6v7, luego 5°/6° y 7°/8°.
  *
- * @param {Array}  top12Teams    - standings.slice(0, 12) — en orden de posición
- * @param {Object} playoffResults - { [matchId]: { homeScore, awayScore } }
+ * En toda serie 1-1-1 el mejor sembrado es local en los juegos 1 y 3.
  */
-export function computeBracket(top12Teams, playoffResults) {
-    const r = (id) => playoffResults[id] || null;
-    const t = (i) => top12Teams[i]?.team ?? null;
 
-    // ─── Cuartos de Final ────────────────────────────────────────────────
-    const rawQFs = [
-        { id: "qf1", home: t(0), homeSeed: 1, away: t(7), awaySeed: 8 },
-        { id: "qf2", home: t(3), homeSeed: 4, away: t(4), awaySeed: 5 },
-        { id: "qf3", home: t(1), homeSeed: 2, away: t(6), awaySeed: 7 },
-        { id: "qf4", home: t(2), homeSeed: 3, away: t(5), awaySeed: 6 },
+import { PLAYOFF_DATES } from "../data/playoffs.js";
+
+/* ── Helpers básicos ──────────────────────────────────────────────── */
+
+const isPlayed = (r) =>
+    !!r &&
+    r.homeScore !== null && r.homeScore !== undefined &&
+    r.awayScore !== null && r.awayScore !== undefined;
+
+/** Un competidor: { team, seed } donde seed es la posición de la fase regular. */
+const slot = (team, seed) => (team ? { team, seed } : null);
+
+const byRegSeed = (a, b) => a.seed - b.seed;
+
+/* ── Partido único ────────────────────────────────────────────────── */
+
+function singleGame({ id, stage, label, a, b, date, results, labelA, labelB }) {
+    const result = results[id] ?? null;
+    // Un resultado huérfano (por ejemplo, guardado y luego borrado aguas arriba)
+    // no debe contar hasta que ambos equipos estén definidos.
+    const ready = !!(a && b);
+    const played = ready && isPlayed(result);
+    const homeWon = played && Number(result.homeScore) > Number(result.awayScore);
+
+    return {
+        id,
+        stage,
+        label,
+        kind: "game",
+        date,
+        home: a?.team ?? null,
+        homeSeed: a?.seed ?? null,
+        away: b?.team ?? null,
+        awaySeed: b?.seed ?? null,
+        labelA: labelA ?? "A definir",
+        labelB: labelB ?? "A definir",
+        result,
+        played,
+        ready,
+        winner: played ? (homeWon ? a.team : b.team) : null,
+        winnerSlot: played ? (homeWon ? a : b) : null,
+        loser: played ? (homeWon ? b.team : a.team) : null,
+        loserSlot: played ? (homeWon ? b : a) : null,
+    };
+}
+
+/* ── Serie al mejor de 3, formato 1-1-1 ───────────────────────────── */
+
+function series({ id, stage, label, a, b, dates, results, labelA, labelB }) {
+    // Juego 1 y 3 en casa del mejor sembrado (a); juego 2 en casa de b.
+    const layout = [
+        { num: 1, host: a, guest: b },
+        { num: 2, host: b, guest: a },
+        { num: 3, host: a, guest: b },
     ];
 
-    const quarterFinals = rawQFs.map((qf) => {
-        const result = r(qf.id);
-        const winner = gameWinner(result, qf.home, qf.away);
-        const winnerSeed = gameWinnerSeed(result, qf.homeSeed, qf.awaySeed);
-        const loser = gameLoser(result, qf.home, qf.away);
-        const loserSeed = gameLoserSeed(result, qf.homeSeed, qf.awaySeed);
-        return { ...qf, result, winner, winnerSeed, loser, loserSeed };
-    });
+    // Mientras falte definir alguno de los dos, un resultado guardado con ese
+    // id se ignora: puede ser un remanente de una ronda que se recalculó.
+    const ready = !!(a && b);
 
-    // ─── Semifinales 1°–4° (IDA/VUELTA/TERCERO) ─────────────────────────
-    // SF1 = S1 (gan. qf1: 1°vs8°) vs S4 (gan. qf2: 4°vs5°)
-    // SF2 = S2 (gan. qf3: 2°vs7°) vs S3 (gan. qf4: 3°vs6°)
-    const sfDefs = [
-        { id: "sf1", qfA: quarterFinals[0], qfB: quarterFinals[1] }, // S1 vs S4
-        { id: "sf2", qfA: quarterFinals[2], qfB: quarterFinals[3] }, // S2 vs S3
-    ];
+    let winsA = 0;
+    let winsB = 0;
 
-    const semiFinals = sfDefs.map(({ id, qfA, qfB }) => {
-        let teamA, seedA, teamB, seedB;
-        const bothKnown = qfA.winnerSeed !== null && qfB.winnerSeed !== null;
+    const games = layout.map(({ num, host, guest }) => {
+        const gameId = `${id}g${num}`;
+        const result = results[gameId] ?? null;
+        const played = ready && isPlayed(result);
+        const hostWon = played && Number(result.homeScore) > Number(result.awayScore);
 
-        if (bothKnown) {
-            if (qfA.winnerSeed <= qfB.winnerSeed) {
-                teamA = qfA.winner; seedA = qfA.winnerSeed;
-                teamB = qfB.winner; seedB = qfB.winnerSeed;
-            } else {
-                teamA = qfB.winner; seedA = qfB.winnerSeed;
-                teamB = qfA.winner; seedB = qfA.winnerSeed;
-            }
-        } else {
-            teamA = qfA.winner ?? null; seedA = qfA.winnerSeed;
-            teamB = qfB.winner ?? null; seedB = qfB.winnerSeed;
+        // El local del juego 2 es `b`, así que hay que mapear a/b y no local/visitante.
+        if (played) {
+            const winnerIsA = num === 2 ? !hostWon : hostWon;
+            if (winnerIsA) winsA++;
+            else winsB++;
         }
-
-        const g1 = r(`${id}g1`), g2 = r(`${id}g2`), g3 = r(`${id}g3`);
-        const state = seriesState(teamA, seedA, teamB, seedB, g1, g2, g3);
 
         return {
-            id, teamA, seedA, teamB, seedB,
-            g1, g2, g3,
-            ...state,
-            labelA: `Gan. ${qfA.homeSeed}° vs ${qfA.awaySeed}°`,
-            labelB: `Gan. ${qfB.homeSeed}° vs ${qfB.awaySeed}°`,
+            id: gameId,
+            num,
+            date: dates[num - 1],
+            home: host?.team ?? null,
+            homeSeed: host?.seed ?? null,
+            away: guest?.team ?? null,
+            awaySeed: guest?.seed ?? null,
+            result,
+            played,
+            winner: played ? (hostWon ? host.team : guest.team) : null,
         };
     });
 
-    // ─── Bracket 5°–8° (partidos únicos) ─────────────────────────────────
-    // sf58a: L4 (per. qf2: 4°vs5°) vs L1 (per. qf1: 1°vs8°)
-    // sf58b: L3 (per. qf4: 3°vs6°) vs L2 (per. qf3: 2°vs7°)
-    const sf58aResult = r("sf58a");
-    const sf58aHome = quarterFinals[1].loser;
-    const sf58aAway = quarterFinals[0].loser;
-    const sf58a = {
-        id: "sf58a", label: "Semi 5°–8° (A)",
-        home: sf58aHome, homeSeed: quarterFinals[1].loserSeed,
-        away: sf58aAway, awaySeed: quarterFinals[0].loserSeed,
-        result: sf58aResult,
-        winner: gameWinner(sf58aResult, sf58aHome, sf58aAway),
-        loser: gameLoser(sf58aResult, sf58aHome, sf58aAway),
-    };
+    const over = winsA >= 2 || winsB >= 2;
+    const winnerSlot = winsA >= 2 ? a : winsB >= 2 ? b : null;
+    const loserSlot = winsA >= 2 ? b : winsB >= 2 ? a : null;
+    const decidedInTwo = (winsA >= 2 || winsB >= 2) && winsA + winsB === 2;
 
-    const sf58bResult = r("sf58b");
-    const sf58bHome = quarterFinals[3].loser;
-    const sf58bAway = quarterFinals[2].loser;
-    const sf58b = {
-        id: "sf58b", label: "Semi 5°–8° (B)",
-        home: sf58bHome, homeSeed: quarterFinals[3].loserSeed,
-        away: sf58bAway, awaySeed: quarterFinals[2].loserSeed,
-        result: sf58bResult,
-        winner: gameWinner(sf58bResult, sf58bHome, sf58bAway),
-        loser: gameLoser(sf58bResult, sf58bHome, sf58bAway),
-    };
-
-    // 7° y 8°: perdedores de sf58
-    const p78Result = r("p78");
-    const p78 = {
-        id: "p78", label: "7° y 8°",
-        home: sf58a.loser, away: sf58b.loser,
-        result: p78Result,
-        winner: gameWinner(p78Result, sf58a.loser, sf58b.loser),
-    };
-
-    // 5° y 6°: ganadores de sf58
-    const p56Result = r("p56");
-    const p56 = {
-        id: "p56", label: "5° y 6°",
-        home: sf58a.winner, away: sf58b.winner,
-        result: p56Result,
-        winner: gameWinner(p56Result, sf58a.winner, sf58b.winner),
-    };
-
-    // ─── 3° y 4° ─────────────────────────────────────────────────────────
-    const p34Result = r("p34");
-    const p34 = {
-        id: "p34", label: "3° y 4°",
-        home: semiFinals[0].seriesLoser, away: semiFinals[1].seriesLoser,
-        result: p34Result,
-        winner: gameWinner(p34Result, semiFinals[0].seriesLoser, semiFinals[1].seriesLoser),
-    };
-
-    // ─── Gran Final (IDA/VUELTA/TERCERO) ─────────────────────────────────
-    let fTeamA, fSeedA, fTeamB, fSeedB;
-    const bothSFsKnown = semiFinals[0].seriesWinnerSeed !== null && semiFinals[1].seriesWinnerSeed !== null;
-
-    if (bothSFsKnown) {
-        if (semiFinals[0].seriesWinnerSeed <= semiFinals[1].seriesWinnerSeed) {
-            fTeamA = semiFinals[0].seriesWinner; fSeedA = semiFinals[0].seriesWinnerSeed;
-            fTeamB = semiFinals[1].seriesWinner; fSeedB = semiFinals[1].seriesWinnerSeed;
-        } else {
-            fTeamA = semiFinals[1].seriesWinner; fSeedA = semiFinals[1].seriesWinnerSeed;
-            fTeamB = semiFinals[0].seriesWinner; fSeedB = semiFinals[0].seriesWinnerSeed;
-        }
-    } else {
-        fTeamA = semiFinals[0].seriesWinner ?? null; fSeedA = semiFinals[0].seriesWinnerSeed;
-        fTeamB = semiFinals[1].seriesWinner ?? null; fSeedB = semiFinals[1].seriesWinnerSeed;
-    }
-
-    const fg1 = r("fg1"), fg2 = r("fg2"), fg3 = r("fg3");
-    const finalState = seriesState(fTeamA, fSeedA, fTeamB, fSeedB, fg1, fg2, fg3);
-    const final = {
-        id: "final",
-        teamA: fTeamA, seedA: fSeedA,
-        teamB: fTeamB, seedB: fSeedB,
-        g1: fg1, g2: fg2, g3: fg3,
-        ...finalState,
-        labelA: "Gan. Semifinal 1",
-        labelB: "Gan. Semifinal 2",
-    };
-
-    // ─── Reposicionamiento 9°–12° (round-robin, 3 jornadas) ──────────────
-    const repoTeams = top12Teams.slice(8, 12);
-    const repoMatches = [
-        // Jornada 1 (31-may)
-        { id: "repo_r1_1", home: t(8),  homeSeed: 9,  away: t(9),  awaySeed: 10, round: 1, roundLabel: "31 may" },
-        { id: "repo_r1_2", home: t(10), homeSeed: 11, away: t(11), awaySeed: 12, round: 1, roundLabel: "31 may" },
-        // Jornada 2 (7-jun)
-        { id: "repo_r2_1", home: t(9),  homeSeed: 10, away: t(10), awaySeed: 11, round: 2, roundLabel: "7 jun" },
-        { id: "repo_r2_2", home: t(11), homeSeed: 12, away: t(8),  awaySeed: 9,  round: 2, roundLabel: "7 jun" },
-        // Jornada 3 (14-jun)
-        { id: "repo_r3_1", home: t(8),  homeSeed: 9,  away: t(10), awaySeed: 11, round: 3, roundLabel: "14 jun" },
-        { id: "repo_r3_2", home: t(9),  homeSeed: 10, away: t(11), awaySeed: 12, round: 3, roundLabel: "14 jun" },
-    ].map((m) => {
-        const result = r(m.id);
-        const winner = gameWinner(result, m.home, m.away);
-        return { ...m, result, winner };
-    });
-
-    const repoStandings = computeRepoStandings(repoTeams, repoMatches);
+    // El juego 3 solo se juega si la serie va 1-1.
+    games[2].skipped = decidedInTwo;
+    games[2].needed = winsA === 1 && winsB === 1;
 
     return {
-        quarterFinals,
-        semiFinals,
-        final,
-        sf58a,
-        sf58b,
-        p56,
-        p78,
-        p34,
-        repoMatches,
-        repoStandings,
+        id,
+        stage,
+        label,
+        kind: "series",
+        a,
+        b,
+        teamA: a?.team ?? null,
+        seedA: a?.seed ?? null,
+        teamB: b?.team ?? null,
+        seedB: b?.seed ?? null,
+        labelA: labelA ?? "A definir",
+        labelB: labelB ?? "A definir",
+        ready,
+        games,
+        winsA,
+        winsB,
+        over,
+        winnerSlot,
+        loserSlot,
+        winner: winnerSlot?.team ?? null,
+        loser: loserSlot?.team ?? null,
+        // Progreso visible: cuántos juegos se jugaron sobre los que hacen falta
+        gamesPlayed: winsA + winsB,
     };
+}
+
+/* ── Tabla del reposicionamiento (round robin de 4) ───────────────── */
+
+function repoStandings(slots, matches) {
+    const stats = {};
+    slots.forEach((s) => {
+        if (!s) return;
+        stats[s.team] = {
+            team: s.team,
+            seed: s.seed,
+            played: 0,
+            won: 0,
+            lost: 0,
+            pointsFor: 0,
+            pointsAgainst: 0,
+            pointsDiff: 0,
+            points: 0,
+        };
+    });
+
+    matches.forEach((m) => {
+        if (!m.played || !m.home || !m.away) return;
+        const hs = Number(m.result.homeScore);
+        const as = Number(m.result.awayScore);
+        const home = stats[m.home];
+        const away = stats[m.away];
+        if (!home || !away) return;
+
+        home.played++;
+        away.played++;
+        home.pointsFor += hs;
+        home.pointsAgainst += as;
+        away.pointsFor += as;
+        away.pointsAgainst += hs;
+
+        if (hs > as) {
+            home.won++; home.points += 2;
+            away.lost++; away.points += 1;
+        } else {
+            away.won++; away.points += 2;
+            home.lost++; home.points += 1;
+        }
+    });
+
+    return Object.values(stats)
+        .map((e) => ({ ...e, pointsDiff: e.pointsFor - e.pointsAgainst }))
+        .sort(
+            (a, b) =>
+                b.points - a.points ||
+                b.won - a.won ||
+                b.pointsDiff - a.pointsDiff ||
+                b.pointsFor - a.pointsFor ||
+                a.seed - b.seed
+        );
+}
+
+/* ── Cálculo completo ─────────────────────────────────────────────── */
+
+/**
+ * @param {Array}  top12   standings.slice(0, 12), en orden de posición
+ * @param {Object} results { [matchId]: { homeScore, awayScore } }
+ */
+export function computeBracket(top12 = [], results = {}) {
+    const seedOf = (pos) => slot(top12[pos - 1]?.team ?? null, pos);
+
+    /* ─── PLAY IN ─────────────────────────────────────────────────── */
+    const playInPairs = [
+        [5, 12],
+        [6, 11],
+        [7, 10],
+        [8, 9],
+    ];
+
+    const playIn = playInPairs.map(([high, low], i) =>
+        series({
+            id: `pi${i + 1}`,
+            stage: "playIn",
+            label: `${high}° vs ${low}°`,
+            a: seedOf(high),
+            b: seedOf(low),
+            dates: PLAYOFF_DATES.playIn,
+            results,
+            labelA: `${high}° de la fase regular`,
+            labelB: `${low}° de la fase regular`,
+        })
+    );
+
+    const playInWinners = playIn.map((s) => s.winnerSlot).filter(Boolean).sort(byRegSeed);
+    const playInLosers = playIn.map((s) => s.loserSlot).filter(Boolean).sort(byRegSeed);
+    const playInComplete = playIn.every((s) => s.over);
+
+    /* ─── Sembrado de la Fase Campeonato (1 a 8) ──────────────────── */
+    // 1° a 4° entran directo; los 4 ganadores del Play In ocupan 5° a 8°
+    // ordenados por su posición en la fase regular.
+    const champSeeds = [1, 2, 3, 4].map((p) => {
+        const s = seedOf(p);
+        return s ? { ...s, champSeed: p, regSeed: p, viaPlayIn: false } : null;
+    });
+
+    playInWinners.forEach((s, i) => {
+        champSeeds[4 + i] = { ...s, champSeed: 5 + i, regSeed: s.seed, viaPlayIn: true };
+    });
+
+    // Dentro de la Fase Campeonato el sembrado que manda es champSeed (1-8).
+    const cs = (n) => {
+        const s = champSeeds[n - 1];
+        return s ? { team: s.team, seed: s.champSeed, regSeed: s.regSeed, viaPlayIn: s.viaPlayIn } : null;
+    };
+
+    /* ─── CUARTOS: 1v8, 2v7, 3v6, 4v5 ─────────────────────────────── */
+    const qfPairs = [
+        [1, 8],
+        [2, 7],
+        [3, 6],
+        [4, 5],
+    ];
+
+    const quarterFinals = qfPairs.map(([high, low], i) =>
+        series({
+            id: `qf${i + 1}`,
+            stage: "quarters",
+            label: `${high}° vs ${low}°`,
+            a: cs(high),
+            b: cs(low),
+            dates: PLAYOFF_DATES.quarters,
+            results,
+            labelA: `${high}° clasificado`,
+            labelB: low <= 4 ? `${low}° clasificado` : `Gan. Play In (${low}°)`,
+        })
+    );
+
+    const qfWinners = quarterFinals.map((s) => s.winnerSlot).filter(Boolean).sort(byRegSeed);
+    const qfLosers = quarterFinals.map((s) => s.loserSlot).filter(Boolean).sort(byRegSeed);
+    const qfComplete = quarterFinals.every((s) => s.over);
+
+    /* ─── SEMIS 1°–4°: reordenamiento 1v4, 2v3 ────────────────────── */
+    const sfSlot = (i) => (qfComplete ? qfWinners[i] ?? null : null);
+
+    const semiFinals = [
+        { id: "sf1", pair: [0, 3], label: "1° vs 4°" },
+        { id: "sf2", pair: [1, 2], label: "2° vs 3°" },
+    ].map(({ id, pair, label }) =>
+        series({
+            id,
+            stage: "semis",
+            label,
+            a: sfSlot(pair[0]),
+            b: sfSlot(pair[1]),
+            dates: PLAYOFF_DATES.semis,
+            results,
+            labelA: `${pair[0] + 1}° de cuartos`,
+            labelB: `${pair[1] + 1}° de cuartos`,
+        })
+    );
+
+    /* ─── FINAL + tercer puesto ───────────────────────────────────── */
+    const sfComplete = semiFinals.every((s) => s.over);
+    const finalists = sfComplete
+        ? semiFinals.map((s) => s.winnerSlot).sort(byRegSeed)
+        : [null, null];
+
+    const final = series({
+        id: "f",
+        stage: "final",
+        label: "Gran Final",
+        a: finalists[0],
+        b: finalists[1],
+        dates: PLAYOFF_DATES.final,
+        results,
+        labelA: "Ganador Semifinal 1",
+        labelB: "Ganador Semifinal 2",
+    });
+
+    const thirdPlaceSlots = sfComplete
+        ? semiFinals.map((s) => s.loserSlot).sort(byRegSeed)
+        : [null, null];
+
+    const p34 = singleGame({
+        id: "p34",
+        stage: "final",
+        label: "Tercer puesto",
+        a: thirdPlaceSlots[0],
+        b: thirdPlaceSlots[1],
+        date: PLAYOFF_DATES.place34,
+        results,
+        labelA: "Perdedor Semifinal 1",
+        labelB: "Perdedor Semifinal 2",
+    });
+
+    /* ─── Cruce 5°–8° (a un juego) ────────────────────────────────── */
+    const l = (i) => (qfComplete ? qfLosers[i] ?? null : null);
+
+    const g58a = singleGame({
+        id: "g58a",
+        stage: "bracket58",
+        label: "5° vs 8°",
+        a: l(0),
+        b: l(3),
+        date: PLAYOFF_DATES.semis58,
+        results,
+        labelA: "Mejor perdedor de cuartos",
+        labelB: "4° perdedor de cuartos",
+    });
+
+    const g58b = singleGame({
+        id: "g58b",
+        stage: "bracket58",
+        label: "6° vs 7°",
+        a: l(1),
+        b: l(2),
+        date: PLAYOFF_DATES.semis58,
+        results,
+        labelA: "2° perdedor de cuartos",
+        labelB: "3° perdedor de cuartos",
+    });
+
+    const p56Slots = [g58a.winnerSlot, g58b.winnerSlot];
+    const p78Slots = [g58a.loserSlot, g58b.loserSlot];
+
+    const p56 = singleGame({
+        id: "p56",
+        stage: "bracket58",
+        label: "Quinto puesto",
+        a: p56Slots[0],
+        b: p56Slots[1],
+        date: PLAYOFF_DATES.place56,
+        results,
+        labelA: "Ganador 5° vs 8°",
+        labelB: "Ganador 6° vs 7°",
+    });
+
+    const p78 = singleGame({
+        id: "p78",
+        stage: "bracket58",
+        label: "Séptimo puesto",
+        a: p78Slots[0],
+        b: p78Slots[1],
+        date: PLAYOFF_DATES.place78,
+        results,
+        labelA: "Perdedor 5° vs 8°",
+        labelB: "Perdedor 6° vs 7°",
+    });
+
+    /* ─── Reposicionamiento 9°–12° ────────────────────────────────── */
+    // Los 4 perdedores del Play In, reordenados 9° a 12° por su posición regular.
+    const repoSlots = playInComplete
+        ? playInLosers.map((s, i) => ({ team: s.team, seed: 9 + i, regSeed: s.seed }))
+        : [null, null, null, null];
+
+    const rp = (n) => repoSlots[n - 9] ?? null;
+
+    const repoMatches = [
+        { id: "repo1a", round: 1, pair: [9, 10] },
+        { id: "repo1b", round: 1, pair: [11, 12] },
+        { id: "repo2a", round: 2, pair: [10, 11] },
+        { id: "repo2b", round: 2, pair: [12, 9] },
+        { id: "repo3a", round: 3, pair: [9, 11] },
+        { id: "repo3b", round: 3, pair: [10, 12] },
+    ].map(({ id, round, pair }) => ({
+        round,
+        ...singleGame({
+            id,
+            stage: "repo",
+            label: `${pair[0]}° vs ${pair[1]}°`,
+            a: rp(pair[0]),
+            b: rp(pair[1]),
+            date: PLAYOFF_DATES.repo[round - 1],
+            results,
+            labelA: `${pair[0]}° del Play In`,
+            labelB: `${pair[1]}° del Play In`,
+        }),
+    }));
+
+    const repoTable = repoStandings(repoSlots, repoMatches);
+
+    /* ─── Posiciones finales ──────────────────────────────────────── */
+    const finalPositions = [
+        final.winner,
+        final.loser,
+        p34.winner,
+        p34.loser,
+        p56.winner,
+        p56.loser,
+        p78.winner,
+        p78.loser,
+        ...[0, 1, 2, 3].map((i) =>
+            repoTable.length === 4 && repoTable.every((t) => t.played === 3)
+                ? repoTable[i].team
+                : null
+        ),
+    ];
+
+    return {
+        playIn,
+        playInWinners,
+        playInLosers,
+        playInComplete,
+        champSeeds: champSeeds.filter(Boolean),
+        quarterFinals,
+        qfComplete,
+        semiFinals,
+        sfComplete,
+        final,
+        p34,
+        bracket58: { a: g58a, b: g58b, p56, p78 },
+        repo: { slots: repoSlots.filter(Boolean), matches: repoMatches, table: repoTable },
+        champion: final.winner,
+        finalPositions,
+    };
+}
+
+/** Etapa más avanzada que ya tiene equipos definidos, o null si no arrancó. */
+export function activeStage(bracket) {
+    if (!bracket) return null;
+    if (bracket.final.ready) return "final";
+    if (bracket.semiFinals.some((s) => s.ready)) return "semis";
+    if (bracket.quarterFinals.some((s) => s.ready)) return "quarters";
+    if (bracket.playIn.some((s) => s.ready)) return "playIn";
+    return null;
+}
+
+/** Todos los partidos cargables del bracket, agrupados por etapa (para el admin). */
+export function bracketSections(bracket) {
+    return [
+        {
+            key: "playIn",
+            title: "Play In",
+            subtitle: "5°v12° · 6°v11° · 7°v10° · 8°v9° — al mejor de 3",
+            series: bracket.playIn,
+            games: [],
+        },
+        {
+            key: "quarters",
+            title: "Cuartos de Final",
+            subtitle: "1°v8° · 2°v7° · 3°v6° · 4°v5° — al mejor de 3",
+            series: bracket.quarterFinals,
+            games: [],
+        },
+        {
+            key: "semis",
+            title: "Semifinales",
+            subtitle: "1°v4° · 2°v3° — al mejor de 3",
+            series: bracket.semiFinals,
+            games: [],
+        },
+        {
+            key: "final",
+            title: "Final y Tercer Puesto",
+            subtitle: "Final al mejor de 3 · 3° puesto a un juego",
+            series: [bracket.final],
+            games: [bracket.p34],
+        },
+        {
+            key: "bracket58",
+            title: "Puestos 5° a 8°",
+            subtitle: "Todos a un juego",
+            series: [],
+            games: [
+                bracket.bracket58.a,
+                bracket.bracket58.b,
+                bracket.bracket58.p56,
+                bracket.bracket58.p78,
+            ],
+        },
+        {
+            key: "repo",
+            title: "Reposicionamiento 9° a 12°",
+            subtitle: "Round robin de 3 jornadas entre los perdedores del Play In",
+            series: [],
+            games: bracket.repo.matches,
+        },
+    ];
 }

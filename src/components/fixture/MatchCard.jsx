@@ -1,144 +1,127 @@
-import { useTheme } from "../../context/ThemeContext";
-import { teamLogos } from "../../data/teamLogos";
+import TeamLogo from "../ui/TeamLogo";
+import { teamShortNames } from "../../data/teamLogos";
+import { formatDateLong } from "../../data/fixture";
 
-export default function MatchCard({ match, highlightTeam = null }) {
-    const { theme } = useTheme();
-    const hasResult = match.result !== null;
-    const homeScore = hasResult ? match.result.homeScore : null;
-    const awayScore = hasResult ? match.result.awayScore : null;
-    const homeWon = hasResult && homeScore > awayScore;
-    const awayWon = hasResult && awayScore > homeScore;
-
-    const homeLogo = teamLogos[match.home];
-    const awayLogo = teamLogos[match.away];
-
-    const homeIsHighlighted = highlightTeam === match.home;
-    const awayIsHighlighted = highlightTeam === match.away;
+/**
+ * Tarjeta de partido con estética de marcador: cada equipo tiene su
+ * "casillero" hundido y el ganador queda realzado en rojo.
+ */
+function TeamRow({ team, score, isHome, won, played, highlighted }) {
+    const short = teamShortNames[team] ?? team;
 
     return (
         <div
-            className="rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200"
-            style={{
-                backgroundColor: theme.bgCard,
-                border: `1px solid ${hasResult ? theme.borderAccent + "44" : theme.border}`,
-                boxShadow: theme.shadowCard,
-            }}
+            className="flex items-center gap-2.5 rounded-2xl px-2 py-1.5 transition-colors duration-300"
+            style={{ background: highlighted ? "var(--red-ghost)" : "transparent" }}
         >
-            {/* Local */}
-            <div
-                className="flex items-center justify-between gap-3 rounded-xl px-2 py-1 transition-colors duration-200"
-                style={{
-                    backgroundColor: homeIsHighlighted ? "#A9000010" : "transparent",
-                }}
-            >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span
-                        className="text-xs font-black px-1.5 py-0.5 rounded shrink-0"
-                        style={{ backgroundColor: "#A90000", color: "white" }}
-                    >
-                        L
-                    </span>
-                    {homeLogo && (
-                        <img src={homeLogo} alt={match.home} className="w-12 h-12 object-contain shrink-0" />
-                    )}
-                    <span
-                        className="text-sm font-bold uppercase tracking-wide truncate"
-                        style={{
-                            color: homeIsHighlighted
-                                ? "#A90000"
-                                : homeWon
-                                    ? theme.textPrimary
-                                    : theme.textSecondary,
-                            fontWeight: homeIsHighlighted ? 900 : undefined,
-                        }}
-                    >
-                        {match.home}
-                    </span>
-                    {homeWon && (
-                        <span className="text-xs shrink-0" style={{ color: theme.textGreen }}>✓</span>
-                    )}
-                </div>
+            <TeamLogo team={team} size={34} dim={played && !won} />
+
+            <span className="flex min-w-0 flex-1 flex-col leading-tight">
                 <span
-                    className="text-2xl font-black shrink-0 w-12 text-center rounded-xl py-1"
+                    className="cond truncate text-[0.92rem] font-bold uppercase tracking-wide"
                     style={{
-                        color: hasResult ? theme.textPrimary : theme.textMuted,
-                        backgroundColor: homeWon ? "#A9000022" : "transparent",
+                        color: highlighted
+                            ? "var(--red)"
+                            : played && !won
+                                ? "var(--text-3)"
+                                : "var(--text-1)",
                     }}
                 >
-                    {hasResult ? homeScore : "—"}
+                    {short}
                 </span>
-            </div>
-
-            {/* Separador */}
-            <div className="flex items-center gap-3">
-                <div className="flex-1 h-px" style={{ backgroundColor: theme.border }} />
-                <span className="text-xs font-black" style={{ color: theme.textMuted }}>VS</span>
-                <div className="flex-1 h-px" style={{ backgroundColor: theme.border }} />
-            </div>
-
-            {/* Visitante */}
-            <div
-                className="flex items-center justify-between gap-3 rounded-xl px-2 py-1 transition-colors duration-200"
-                style={{
-                    backgroundColor: awayIsHighlighted ? "#A9000010" : "transparent",
-                }}
-            >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span
-                        className="text-xs font-black px-1.5 py-0.5 rounded shrink-0"
-                        style={{ backgroundColor: theme.borderStrong, color: theme.textSecondary }}
-                    >
-                        V
-                    </span>
-                    {awayLogo && (
-                        <img src={awayLogo} alt={match.away} className="w-12 h-12 object-contain shrink-0" />
-                    )}
-                    <span
-                        className="text-sm font-bold uppercase tracking-wide truncate"
-                        style={{
-                            color: awayIsHighlighted
-                                ? "#A90000"
-                                : awayWon
-                                    ? theme.textPrimary
-                                    : theme.textSecondary,
-                            fontWeight: awayIsHighlighted ? 900 : undefined,
-                        }}
-                    >
-                        {match.away}
-                    </span>
-                    {awayWon && (
-                        <span className="text-xs shrink-0" style={{ color: theme.textGreen }}>✓</span>
-                    )}
-                </div>
                 <span
-                    className="text-2xl font-black shrink-0 w-12 text-center rounded-xl py-1"
-                    style={{
-                        color: hasResult ? theme.textPrimary : theme.textMuted,
-                        backgroundColor: awayWon ? "#A9000022" : "transparent",
-                    }}
+                    className="cond text-[0.6rem] font-semibold uppercase tracking-[0.14em]"
+                    style={{ color: "var(--text-3)" }}
                 >
-                    {hasResult ? awayScore : "—"}
+                    {isHome ? "Local" : "Visitante"}
                 </span>
-            </div>
+            </span>
 
-            {/* Estado */}
-            <div className="flex justify-center pt-1">
-                {hasResult ? (
-                    <span
-                        className="text-xs px-3 py-0.5 rounded-full font-semibold"
-                        style={{ backgroundColor: theme.textGreen + "22", color: theme.textGreen }}
-                    >
-                        Final
-                    </span>
-                ) : (
-                    <span
-                        className="text-xs px-3 py-0.5 rounded-full font-semibold"
-                        style={{ backgroundColor: theme.border, color: theme.textMuted }}
-                    >
-                        Pendiente
-                    </span>
-                )}
-            </div>
+            <span
+                className="tabular flex h-11 w-14 shrink-0 items-center justify-center rounded-xl text-2xl transition-all duration-300"
+                style={
+                    won
+                        ? {
+                            color: "#fff",
+                            background: "linear-gradient(145deg, var(--red-bright), var(--red))",
+                            boxShadow: "var(--nm-xs), 0 4px 14px -5px var(--red)",
+                        }
+                        : {
+                            color: played ? "var(--text-2)" : "var(--text-3)",
+                            background: "var(--sunken)",
+                            boxShadow: "var(--nm-in-sm)",
+                        }
+                }
+            >
+                {played ? score : "–"}
+            </span>
         </div>
+    );
+}
+
+export default function MatchCard({ match, highlightTeam = null, date, delay = 0 }) {
+    const result = match.result;
+    const played =
+        !!result && result.homeScore !== null && result.homeScore !== undefined;
+
+    const homeScore = played ? Number(result.homeScore) : null;
+    const awayScore = played ? Number(result.awayScore) : null;
+    const homeWon = played && homeScore > awayScore;
+    const awayWon = played && awayScore > homeScore;
+    const walkover = played && result.walkover;
+
+    return (
+        <article
+            className="nm nm-edge nm-hover a-rise flex flex-col gap-1 p-3.5"
+            style={{ "--d": `${delay}ms` }}
+        >
+            <TeamRow
+                team={match.home}
+                score={homeScore}
+                isHome
+                won={homeWon}
+                played={played}
+                highlighted={highlightTeam === match.home}
+            />
+
+            <div className="flex items-center gap-3 px-2">
+                <span className="h-px flex-1" style={{ background: "var(--line)" }} />
+                <span
+                    className="cond text-[0.62rem] font-bold uppercase tracking-[0.2em]"
+                    style={{ color: "var(--text-3)" }}
+                >
+                    {played ? "Final" : "vs"}
+                </span>
+                <span className="h-px flex-1" style={{ background: "var(--line)" }} />
+            </div>
+
+            <TeamRow
+                team={match.away}
+                score={awayScore}
+                isHome={false}
+                won={awayWon}
+                played={played}
+                highlighted={highlightTeam === match.away}
+            />
+
+            {(date || walkover) && (
+                <div className="flex items-center justify-between gap-2 px-2 pt-1.5">
+                    <span
+                        className="cond text-[0.65rem] font-semibold uppercase tracking-[0.14em]"
+                        style={{ color: "var(--text-3)" }}
+                    >
+                        {date ? formatDateLong(date) : ""}
+                    </span>
+                    {walkover && (
+                        <span
+                            className="cond text-[0.6rem] font-bold uppercase tracking-[0.14em]"
+                            style={{ color: "var(--warn)" }}
+                        >
+                            Ganó por default
+                        </span>
+                    )}
+                </div>
+            )}
+        </article>
     );
 }

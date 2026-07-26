@@ -2,126 +2,85 @@ import { useState } from "react";
 import Layout from "../components/ui/Layout";
 import MatchResultForm from "../components/admin/MatchResultForm";
 import PlayoffAdminPanel from "../components/admin/PlayoffAdminPanel";
+import { SectionTitle, ProgressBar, Spinner } from "../components/ui/Primitives";
 import { useFixture } from "../hooks/useFixture";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { formatDateLong } from "../data/fixture";
+
+const TABS = [
+    { id: "regular", label: "🏀 Fase Regular" },
+    { id: "playoffs", label: "🏆 Fase Final" },
+];
 
 export default function Admin() {
     const { fixtureWithResults, loading } = useFixture();
     const { logout } = useAuth();
-    const { theme } = useTheme();
-    const [selectedRound, setSelectedRound] = useState(1);
-    const [activeTab, setActiveTab] = useState("regular"); // "regular" | "playoffs"
+    const [round, setRound] = useState(1);
+    const [tab, setTab] = useState("regular");
 
-    const currentRound = fixtureWithResults.find((r) => r.round === selectedRound);
-    const totalMatches = fixtureWithResults.reduce((acc, r) => acc + r.matches.length, 0);
-    const playedMatches = fixtureWithResults.reduce(
-        (acc, r) => acc + r.matches.filter((m) => m.result !== null).length, 0
+    const current = fixtureWithResults.find((r) => r.round === round);
+    const total = fixtureWithResults.reduce((a, r) => a + r.matches.length, 0);
+    const played = fixtureWithResults.reduce(
+        (a, r) => a + r.matches.filter((m) => m.result !== null).length,
+        0
     );
 
     return (
         <Layout>
             <div className="flex flex-col gap-6">
-
-                {/* Encabezado */}
-                <div
-                    className="rounded-2xl p-5 flex flex-col gap-3"
-                    style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.border}`, boxShadow: theme.shadowCard }}
-                >
-                    <div className="flex items-start justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-black uppercase tracking-wide" style={{ color: theme.textPrimary }}>
-                                Panel Admin
-                            </h1>
-                            <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
-                                Torneo Promocional 2026
-                            </p>
-                        </div>
-                        <button
-                            onClick={logout}
-                            className="text-xs px-3 py-2 rounded-xl font-bold uppercase tracking-wider text-white shrink-0"
-                            style={{ backgroundColor: "#A90000" }}
-                        >
+                <SectionTitle
+                    eyebrow="Torneo Oficial Promocional 2026"
+                    title="Panel Admin"
+                    right={
+                        <button onClick={logout} className="nm-btn px-4 py-2 text-xs">
                             Cerrar sesión
                         </button>
-                    </div>
+                    }
+                />
 
-                    {/* Barra de progreso fase regular */}
-                    <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between text-xs" style={{ color: theme.textMuted }}>
-                            <span>Fase regular</span>
-                            <span>{playedMatches} / {totalMatches} partidos</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: theme.border }}>
-                            <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{
-                                    width: `${(playedMatches / totalMatches) * 100}%`,
-                                    backgroundColor: "#A90000",
-                                }}
-                            />
-                        </div>
-                    </div>
+                <div className="nm nm-edge a-rise p-5">
+                    <ProgressBar
+                        value={played}
+                        max={total}
+                        label="Fase regular"
+                        hint={`${played} / ${total} partidos`}
+                    />
                 </div>
 
-                {/* Tabs: Fase Regular / Playoffs */}
                 <div className="flex gap-2">
-                    {[
-                        { id: "regular", label: "🏀 Fase Regular" },
-                        { id: "playoffs", label: "🏆 Playoffs" },
-                    ].map((tab) => {
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className="flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-200"
-                                style={{
-                                    backgroundColor: isActive ? "#A90000" : theme.bgCard,
-                                    color: isActive ? "#ffffff" : theme.textSecondary,
-                                    border: `1px solid ${isActive ? "#A90000" : theme.border}`,
-                                    boxShadow: isActive ? "0 4px 12px rgba(169,0,0,0.3)" : theme.shadowCard,
-                                }}
-                            >
-                                {tab.label}
-                            </button>
-                        );
-                    })}
+                    {TABS.map((t) => (
+                        <button
+                            key={t.id}
+                            onClick={() => setTab(t.id)}
+                            className={`nm-btn flex-1 py-3 text-xs ${tab === t.id ? "nm-btn-on" : ""}`}
+                        >
+                            {t.label}
+                        </button>
+                    ))}
                 </div>
 
-                {/* ── FASE REGULAR ── */}
-                {activeTab === "regular" && (
+                {tab === "regular" && (
                     <>
-                        {/* Selector de fechas */}
-                        <div>
-                            <p className="text-xs uppercase tracking-widest mb-3" style={{ color: theme.textMuted }}>
-                                Seleccioná una fecha
-                            </p>
-                            <div className="flex gap-2 overflow-x-auto pb-2">
-                                {fixtureWithResults.map((round) => {
-                                    const isSelected = round.round === selectedRound;
-                                    const hasResults = round.matches.some((m) => m.result !== null);
-                                    const allDone = round.matches.every((m) => m.result !== null);
+                        <div className="flex flex-col gap-2.5">
+                            <span className="eyebrow">Seleccioná una fecha</span>
+                            <div className="no-bar -mx-1 flex gap-2 overflow-x-auto px-1 py-1">
+                                {fixtureWithResults.map((r) => {
+                                    const active = r.round === round;
+                                    const done = r.matches.every((m) => m.result !== null);
+                                    const some = r.matches.some((m) => m.result !== null);
 
                                     return (
                                         <button
-                                            key={round.round}
-                                            onClick={() => setSelectedRound(round.round)}
-                                            className="relative shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200"
-                                            style={{
-                                                backgroundColor: isSelected ? "#A90000" : theme.bgCard,
-                                                color: isSelected ? "#ffffff" : theme.textSecondary,
-                                                border: `1px solid ${isSelected ? "#A90000" : theme.border}`,
-                                                boxShadow: isSelected ? "0 4px 12px rgba(169,0,0,0.3)" : theme.shadowCard,
-                                            }}
+                                            key={r.round}
+                                            onClick={() => setRound(r.round)}
+                                            className={`nm-btn relative shrink-0 px-4 py-2.5 text-xs ${active ? "nm-btn-on" : ""}`}
                                         >
-                                            {round.label}
-                                            {!isSelected && hasResults && (
+                                            {r.round}ª
+                                            {!active && some && (
                                                 <span
-                                                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2"
+                                                    className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full"
                                                     style={{
-                                                        backgroundColor: allDone ? theme.textGreen : "#A90000",
-                                                        borderColor: theme.bgApp,
+                                                        background: done ? "var(--ok)" : "var(--red)",
                                                     }}
                                                 />
                                             )}
@@ -131,31 +90,32 @@ export default function Admin() {
                             </div>
                         </div>
 
-                        {/* Partidos */}
                         {loading ? (
-                            <div className="flex items-center justify-center py-20">
-                                <div
-                                    className="w-10 h-10 rounded-full border-4 animate-spin"
-                                    style={{ borderColor: "#A90000", borderTopColor: "transparent" }}
-                                />
-                            </div>
+                            <Spinner />
                         ) : (
                             <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-black uppercase tracking-wider" style={{ color: theme.textPrimary }}>
-                                        {currentRound?.label}
-                                    </h2>
+                                <div className="flex items-baseline justify-between gap-3">
+                                    <h3 className="display text-2xl" style={{ color: "var(--text-1)" }}>
+                                        {current?.label}
+                                    </h3>
                                     <span
-                                        className="text-xs px-2 py-1 rounded-full"
-                                        style={{ backgroundColor: theme.border, color: theme.textMuted }}
+                                        className="cond text-[0.68rem] font-bold uppercase tracking-[0.14em]"
+                                        style={{ color: "var(--text-3)" }}
                                     >
-                                        {currentRound?.matches.filter(m => m.result !== null).length} / {currentRound?.matches.length} cargados
+                                        {formatDateLong(current?.date)} ·{" "}
+                                        {current?.matches.filter((m) => m.result !== null).length}/
+                                        {current?.matches.length} cargados
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {currentRound?.matches.map((match) => (
-                                        <MatchResultForm key={match.id} match={match} />
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {current?.matches.map((match, i) => (
+                                        <MatchResultForm
+                                            key={match.id}
+                                            match={match}
+                                            date={current.date}
+                                            delay={i * 45}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -163,9 +123,7 @@ export default function Admin() {
                     </>
                 )}
 
-                {/* ── PLAYOFFS ── */}
-                {activeTab === "playoffs" && <PlayoffAdminPanel />}
-
+                {tab === "playoffs" && <PlayoffAdminPanel />}
             </div>
         </Layout>
     );

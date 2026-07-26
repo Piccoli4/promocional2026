@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/UyP.png";
+import CourtBackdrop from "../components/ui/CourtBackdrop";
+import Basketball3D from "../components/ui/Basketball3D";
 
 export default function Login() {
     const { login, isAdmin } = useAuth();
@@ -12,17 +13,14 @@ export default function Login() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Si ya está logueado, redirige directo al admin
-    if (isAdmin) {
-        navigate("/admin");
-        return null;
-    }
+    useEffect(() => {
+        if (isAdmin) navigate("/admin", { replace: true });
+    }, [isAdmin, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setLoading(true);
-
         try {
             await login(email, password);
             navigate("/admin");
@@ -35,87 +33,64 @@ export default function Login() {
     };
 
     return (
-        <div
-            className="min-h-screen flex items-center justify-center px-4"
-            style={{ backgroundColor: "#0a0a2e" }}
-        >
-            <div
-                className="w-full max-w-md rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-6"
-                style={{ backgroundColor: "#000055" }}
-            >
-                {/* Logo */}
-                <img src={logo} alt="UyP Logo" className="h-24 w-24 object-contain" />
+        <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
+            <CourtBackdrop />
 
-                {/* Título */}
-                <div className="text-center">
-                    <h1 className="text-2xl font-black text-white uppercase tracking-wide">
-                        Panel Administrador
+            <div className="nm-lg nm-edge a-rise relative z-10 flex w-full max-w-md flex-col items-center gap-6 p-8">
+                <Basketball3D size={96} />
+
+                <div className="flex flex-col items-center gap-1 text-center">
+                    <h1 className="display text-3xl" style={{ color: "var(--text-1)" }}>
+                        Panel de Administración
                     </h1>
-                    <p className="text-sm mt-1" style={{ color: "#ffffff88" }}>
-                        Unión y Progreso — Torneo Promocional 2026
+                    <p
+                        className="cond text-[0.68rem] font-bold uppercase tracking-[0.18em]"
+                        style={{ color: "var(--red)" }}
+                    >
+                        Torneo Oficial Promocional 2026
                     </p>
                 </div>
 
-                {/* Formulario */}
-                <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-
-                    {/* Email */}
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-300 uppercase tracking-wider">
-                            Email
-                        </label>
+                <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+                    <label className="flex flex-col gap-1.5">
+                        <span className="eyebrow">Email</span>
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            autoComplete="username"
                             placeholder="admin@uyp.com"
-                            className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 outline-none focus:ring-2 transition-all"
-                            style={{
-                                backgroundColor: "#0a0a2e",
-                                border: "1px solid #ffffff22",
-                                focusRingColor: "#A90000",
-                            }}
+                            className="nm-input w-full px-4 py-3 text-base"
                         />
-                    </div>
+                    </label>
 
-                    {/* Contraseña */}
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-300 uppercase tracking-wider">
-                            Contraseña
-                        </label>
+                    <label className="flex flex-col gap-1.5">
+                        <span className="eyebrow">Contraseña</span>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            autoComplete="current-password"
                             placeholder="••••••••"
-                            className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 outline-none focus:ring-2 transition-all"
-                            style={{
-                                backgroundColor: "#0a0a2e",
-                                border: "1px solid #ffffff22",
-                            }}
+                            className="nm-input w-full px-4 py-3 text-base"
                         />
-                    </div>
+                    </label>
 
-                    {/* Error */}
                     {error && (
-                        <div
-                            className="text-sm text-center py-2 px-4 rounded-lg"
-                            style={{ backgroundColor: "#A9000033", color: "#ff6b6b" }}
+                        <p
+                            className="nm-in-sm cond px-4 py-2.5 text-center text-sm font-semibold"
+                            style={{ color: "var(--danger)" }}
                         >
                             {error}
-                        </div>
+                        </p>
                     )}
 
-                    {/* Botón */}
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 rounded-lg text-white font-bold uppercase tracking-wider transition-all duration-200 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: "#A90000" }}
-                        onMouseEnter={e => { if (!loading) e.target.style.backgroundColor = "#8a0000" }}
-                        onMouseLeave={e => { if (!loading) e.target.style.backgroundColor = "#A90000" }}
+                        className="nm-btn nm-btn-accent mt-1 w-full py-3.5 text-sm"
                     >
                         {loading ? "Ingresando..." : "Ingresar"}
                     </button>

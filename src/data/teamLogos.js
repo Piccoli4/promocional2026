@@ -1,4 +1,3 @@
-import aLeyes from "../assets/ALeyes.png";
 import alianza from "../assets/Alianza.png";
 import alumni from "../assets/Alumni.png";
 import atleticoFranck from "../assets/AtleticoFranck.png";
@@ -12,31 +11,56 @@ import uypa from "../assets/UyPA.png";
 import uypb from "../assets/UyPB.png";
 
 export const teamLogos = {
-    "COLÓN SJ": colonSJ,
     "COLÓN SF": colonSF,
-    "ALUMNI": alumni,
+    "COLÓN SJ": colonSJ,
     "REGATAS SF": regatas,
-    'U. Y PROGRESO A': uypa,
-    'U. Y PROGRESO B': uypb,
-    "ATL. FRANCK": atleticoFranck,
+    "ALUMNI": alumni,
+    "U. Y PROGRESO A": uypa,
+    "U. Y PROGRESO B": uypb,
+    "ATL. FRANCK A": atleticoFranck,
+    "ATL. FRANCK B": atleticoFranck,
     "ALIANZA": alianza,
+    "KIMBERLEY": kimberley,
     "SANTA ROSA": santaRosa,
     "CENTRAL RINCÓN": rincon,
-    "KIMBERLEY": kimberley,
-    "ARROYO LEYES": aLeyes,
+};
+
+/**
+ * Clubes que presentan más de un equipo y comparten escudo.
+ * La insignia se dibuja sobre el logo para distinguirlos.
+ */
+export const teamBadges = {
+    "ATL. FRANCK A": "A",
+    "ATL. FRANCK B": "B",
 };
 
 export const teamShortNames = {
-    "COLÓN SJ": "COLÓN SJ",
     "COLÓN SF": "COLÓN SF",
-    "ALUMNI": "ALUMNI",
+    "COLÓN SJ": "COLÓN SJ",
     "REGATAS SF": "REGATAS",
-    'U. Y PROGRESO A': "UyP A",
-    'U. Y PROGRESO B': "UyP B",
-    "ATL. FRANCK": "FRANCK",
+    "ALUMNI": "ALUMNI",
+    "U. Y PROGRESO A": "UyP A",
+    "U. Y PROGRESO B": "UyP B",
+    "ATL. FRANCK A": "FRANCK A",
+    "ATL. FRANCK B": "FRANCK B",
     "ALIANZA": "ALIANZA",
+    "KIMBERLEY": "KIMBER.",
     "SANTA ROSA": "STA ROSA",
     "CENTRAL RINCÓN": "CENTRAL",
+};
+
+/** Nombre ultra corto para el bracket y espacios apretados. */
+export const teamTinyNames = {
+    "COLÓN SF": "C. SF",
+    "COLÓN SJ": "C. SJ",
+    "REGATAS SF": "REGATAS",
+    "ALUMNI": "ALUMNI",
+    "U. Y PROGRESO A": "UyP A",
+    "U. Y PROGRESO B": "UyP B",
+    "ATL. FRANCK A": "FRANCK A",
+    "ATL. FRANCK B": "FRANCK B",
+    "ALIANZA": "ALIANZA",
     "KIMBERLEY": "KIMBER.",
-    "ARROYO LEYES": "A. LEYES",
+    "SANTA ROSA": "STA ROSA",
+    "CENTRAL RINCÓN": "RINCÓN",
 };

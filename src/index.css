@@ -1,1 +1,653 @@
 @import "tailwindcss";
+
+/* ── Tipografías auto-alojadas (la PWA funciona offline) ─────────────── */
+@import "@fontsource/bebas-neue/latin-400.css";
+@import "@fontsource/barlow-condensed/latin-500.css";
+@import "@fontsource/barlow-condensed/latin-600.css";
+@import "@fontsource/barlow-condensed/latin-700.css";
+@import "@fontsource/barlow/latin-400.css";
+@import "@fontsource/barlow/latin-500.css";
+@import "@fontsource/barlow/latin-600.css";
+@import "@fontsource/barlow/latin-700.css";
+
+@theme {
+    --font-display: "Bebas Neue", "Barlow Condensed", sans-serif;
+    --font-cond: "Barlow Condensed", "Barlow", sans-serif;
+    --font-sans: "Barlow", system-ui, -apple-system, sans-serif;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TOKENS — Neumorfismo Unión y Progreso
+   Marca: azul #000055 · rojo #A90000
+   ════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-theme="light"] {
+    --bg: #e8e4db;
+    --bg-deep: #ded9ce;
+    --surface: #ece8df;
+    --surface-2: #f3f0e9;
+    --sunken: #e0dbd1;
+
+    --sh-dark: rgba(0, 0, 85, 0.17);
+    --sh-light: rgba(255, 255, 255, 0.95);
+
+    --text-1: #14142b;
+    --text-2: #4b4b6b;
+    --text-3: #8b8ba4;
+
+    --navy: #000055;
+    --navy-soft: #2b2b78;
+    --red: #a90000;
+    --red-bright: #c81111;
+    --red-ghost: rgba(169, 0, 0, 0.1);
+    --gold: #b8860b;
+
+    --ok: #15803d;
+    --ok-ghost: rgba(21, 128, 61, 0.12);
+    --danger: #c62828;
+    --warn: #b45309;
+
+    --line: rgba(0, 0, 85, 0.1);
+    --line-strong: rgba(0, 0, 85, 0.2);
+    --court: rgba(0, 0, 85, 0.055);
+
+    --ball-1: #e8863a;
+    --ball-2: #b84d17;
+
+    --glow-a: rgba(0, 0, 85, 0.09);
+    --glow-b: rgba(169, 0, 0, 0.07);
+
+    color-scheme: light;
+}
+
+[data-theme="dark"] {
+    --bg: #191933;
+    --bg-deep: #101024;
+    --surface: #1e1e3c;
+    --surface-2: #242449;
+    --sunken: #151530;
+
+    --sh-dark: rgba(3, 3, 16, 0.72);
+    --sh-light: rgba(116, 116, 200, 0.11);
+
+    --text-1: #f3f3fb;
+    --text-2: #b3b3d6;
+    --text-3: #7676a0;
+
+    --navy: #7d7dff;
+    --navy-soft: #4a4ac4;
+    --red: #ef3131;
+    --red-bright: #ff4b4b;
+    --red-ghost: rgba(239, 49, 49, 0.14);
+    --gold: #e0b64a;
+
+    --ok: #4ade80;
+    --ok-ghost: rgba(74, 222, 128, 0.13);
+    --danger: #f87171;
+    --warn: #fbbf24;
+
+    --line: rgba(255, 255, 255, 0.07);
+    --line-strong: rgba(255, 255, 255, 0.16);
+    --court: rgba(255, 255, 255, 0.055);
+
+    --ball-1: #f0913f;
+    --ball-2: #a63f10;
+
+    --glow-a: rgba(80, 80, 220, 0.16);
+    --glow-b: rgba(239, 49, 49, 0.1);
+
+    color-scheme: dark;
+}
+
+/* Sombras neumórficas derivadas */
+:root {
+    --nm-xs: 2px 2px 5px var(--sh-dark), -2px -2px 5px var(--sh-light);
+    --nm-sm: 4px 4px 9px var(--sh-dark), -4px -4px 9px var(--sh-light);
+    --nm: 7px 7px 16px var(--sh-dark), -7px -7px 16px var(--sh-light);
+    --nm-lg: 13px 13px 30px var(--sh-dark), -11px -11px 26px var(--sh-light);
+    --nm-in-sm: inset 2px 2px 5px var(--sh-dark), inset -2px -2px 5px var(--sh-light);
+    --nm-in: inset 5px 5px 11px var(--sh-dark), inset -5px -5px 11px var(--sh-light);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   BASE
+   ════════════════════════════════════════════════════════════════════ */
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text-1);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 1;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+    transition: background-color 0.45s var(--ease-out), color 0.45s var(--ease-out);
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+    font-weight: 400;
+    line-height: 1.05;
+}
+
+/* Números de marcador: condensada y tabular */
+.tabular {
+    font-family: var(--font-cond);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.display {
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+    line-height: 1;
+}
+
+.cond {
+    font-family: var(--font-cond);
+}
+
+.eyebrow {
+    font-family: var(--font-cond);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.68rem;
+    color: var(--text-3);
+}
+
+::selection {
+    background: var(--red);
+    color: #fff;
+}
+
+/* Scrollbars discretas */
+.no-bar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.no-bar::-webkit-scrollbar {
+    display: none;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   FONDO — halos animados + líneas de cancha
+   ════════════════════════════════════════════════════════════════════ */
+
+.court-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.court-bg::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background:
+        radial-gradient(48rem 48rem at 12% -6%, var(--glow-a), transparent 62%),
+        radial-gradient(38rem 38rem at 92% 8%, var(--glow-b), transparent 60%),
+        radial-gradient(44rem 44rem at 50% 108%, var(--glow-a), transparent 65%);
+    animation: drift 26s ease-in-out infinite alternate;
+}
+
+.court-lines {
+    position: absolute;
+    inset: 0;
+    color: var(--court);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   NEUMORFISMO — superficies
+   ════════════════════════════════════════════════════════════════════ */
+
+.nm {
+    background: var(--surface);
+    box-shadow: var(--nm);
+    border-radius: 1.5rem;
+}
+
+.nm-sm {
+    background: var(--surface);
+    box-shadow: var(--nm-sm);
+    border-radius: 1rem;
+}
+
+.nm-lg {
+    background: var(--surface);
+    box-shadow: var(--nm-lg);
+    border-radius: 2rem;
+}
+
+.nm-in {
+    background: var(--sunken);
+    box-shadow: var(--nm-in);
+    border-radius: 1.25rem;
+}
+
+.nm-in-sm {
+    background: var(--sunken);
+    box-shadow: var(--nm-in-sm);
+    border-radius: 0.75rem;
+}
+
+.nm-flat {
+    background: var(--surface-2);
+    border-radius: 1.25rem;
+}
+
+/* Realce del borde superior: da volumen real a la superficie */
+.nm-edge {
+    position: relative;
+}
+
+.nm-edge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    border-top: 1px solid var(--sh-light);
+    border-left: 1px solid var(--sh-light);
+    opacity: 0.55;
+    mask-image: linear-gradient(160deg, #000 0%, transparent 55%);
+    -webkit-mask-image: linear-gradient(160deg, #000 0%, transparent 55%);
+}
+
+/* Interacción táctil: la pieza se hunde al presionar */
+.nm-press {
+    transition: box-shadow 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+}
+
+.nm-press:active {
+    box-shadow: var(--nm-in-sm);
+    transform: scale(0.985);
+}
+
+@media (hover: hover) {
+    .nm-hover {
+        transition: box-shadow 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+    }
+
+    .nm-hover:hover {
+        box-shadow: var(--nm-lg);
+        transform: translateY(-3px);
+    }
+}
+
+/* ── Botones ─────────────────────────────────────────────────────── */
+
+.nm-btn {
+    font-family: var(--font-cond);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-2);
+    box-shadow: var(--nm-sm);
+    transition: box-shadow 0.22s var(--ease-out), transform 0.22s var(--ease-out),
+        color 0.22s var(--ease-out);
+    cursor: pointer;
+    user-select: none;
+}
+
+.nm-btn:active {
+    box-shadow: var(--nm-in-sm);
+    transform: scale(0.97);
+}
+
+.nm-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: var(--nm-in-sm);
+}
+
+@media (hover: hover) {
+    .nm-btn:not(:disabled):hover {
+        color: var(--text-1);
+        box-shadow: var(--nm);
+    }
+}
+
+.nm-btn-accent {
+    background: linear-gradient(145deg, var(--red-bright), var(--red));
+    color: #fff;
+    box-shadow: var(--nm-sm), 0 6px 18px -6px var(--red);
+}
+
+@media (hover: hover) {
+    .nm-btn-accent:not(:disabled):hover {
+        color: #fff;
+        box-shadow: var(--nm), 0 10px 26px -8px var(--red);
+        transform: translateY(-2px);
+    }
+}
+
+.nm-btn-on {
+    color: var(--red);
+    box-shadow: var(--nm-in-sm);
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────── */
+
+.nm-input {
+    background: var(--sunken);
+    box-shadow: var(--nm-in-sm);
+    border: 0;
+    border-radius: 0.9rem;
+    color: var(--text-1);
+    font-family: var(--font-cond);
+    font-weight: 700;
+    outline: none;
+    transition: box-shadow 0.25s var(--ease-out);
+}
+
+.nm-input::placeholder {
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+.nm-input:focus {
+    box-shadow: var(--nm-in-sm), 0 0 0 2px var(--red);
+}
+
+.nm-input::-webkit-outer-spin-button,
+.nm-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.nm-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Foco visible accesible */
+:where(a, button, input, select):focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 3px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   3D — perspectiva, tilt y pelota
+   ════════════════════════════════════════════════════════════════════ */
+
+.scene {
+    perspective: 900px;
+    perspective-origin: 50% 40%;
+}
+
+.tilt {
+    transform-style: preserve-3d;
+    transition: transform 0.5s var(--ease-out);
+    will-change: transform;
+}
+
+@media (hover: hover) {
+    .tilt-host:hover .tilt {
+        transform: rotateX(7deg) rotateY(-9deg) translateZ(14px);
+    }
+}
+
+.layer-1 {
+    transform: translateZ(26px);
+}
+
+.layer-2 {
+    transform: translateZ(46px);
+}
+
+/* ── Pelota de básquet 3D (esfera + meridianos, sin librerías) ───── */
+
+.ball {
+    position: relative;
+    transform-style: preserve-3d;
+    animation: ball-spin 15s linear infinite;
+}
+
+.ball-core {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 26%,
+            #ffc48a 0%,
+            var(--ball-1) 34%,
+            var(--ball-2) 78%,
+            #6d2708 100%);
+    box-shadow:
+        inset -10px -14px 26px rgba(0, 0, 0, 0.45),
+        inset 8px 8px 18px rgba(255, 220, 180, 0.28),
+        0 22px 40px -14px rgba(0, 0, 0, 0.55);
+}
+
+.ball-meridian {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(46, 14, 0, 0.5);
+    transform-style: preserve-3d;
+}
+
+/* Costura horizontal (paralelo) */
+.ball-parallel {
+    position: absolute;
+    left: 3%;
+    right: 3%;
+    top: 28%;
+    height: 44%;
+    border-radius: 50%;
+    border: 2px solid rgba(40, 11, 0, 0.55);
+    border-left-color: transparent;
+    border-right-color: transparent;
+}
+
+.ball-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.5) 0%, transparent 34%);
+    pointer-events: none;
+}
+
+/* ── Aro ─────────────────────────────────────────────────────────── */
+
+.hoop-ring {
+    border-radius: 50%;
+    border: 3px solid var(--red);
+    transform: rotateX(72deg);
+    box-shadow: 0 0 22px -4px var(--red);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   ANIMACIONES
+   ════════════════════════════════════════════════════════════════════ */
+
+@keyframes drift {
+    from {
+        transform: translate3d(-2%, -1%, 0) scale(1);
+    }
+
+    to {
+        transform: translate3d(3%, 2%, 0) scale(1.07);
+    }
+}
+
+@keyframes ball-spin {
+    from {
+        transform: rotateX(-14deg) rotateY(0deg);
+    }
+
+    to {
+        transform: rotateX(-14deg) rotateY(360deg);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes pop {
+    from {
+        opacity: 0;
+        transform: scale(0.86);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slide-x {
+    from {
+        opacity: 0;
+        transform: translateX(-14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes float-y {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-9px);
+    }
+}
+
+@keyframes pulse-ring {
+    0% {
+        box-shadow: 0 0 0 0 var(--red-ghost);
+    }
+
+    70% {
+        box-shadow: 0 0 0 12px transparent;
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+@keyframes shimmer {
+    from {
+        background-position: -160% 0;
+    }
+
+    to {
+        background-position: 260% 0;
+    }
+}
+
+@keyframes dash-run {
+    to {
+        stroke-dashoffset: -1000;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.a-rise {
+    animation: rise 0.62s var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+}
+
+.a-pop {
+    animation: pop 0.5s var(--ease-spring) both;
+    animation-delay: var(--d, 0ms);
+}
+
+.a-slide {
+    animation: slide-x 0.5s var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+}
+
+.a-float {
+    animation: float-y 5.5s ease-in-out infinite;
+}
+
+.a-pulse {
+    animation: pulse-ring 2.2s ease-out infinite;
+}
+
+.a-spin {
+    animation: spin 0.9s linear infinite;
+}
+
+.skeleton {
+    background: linear-gradient(90deg,
+            var(--sunken) 0%,
+            var(--surface-2) 45%,
+            var(--sunken) 90%);
+    background-size: 220% 100%;
+    animation: shimmer 1.5s linear infinite;
+    border-radius: 0.75rem;
+}
+
+/* Línea del bracket */
+.bracket-line {
+    stroke: var(--line-strong);
+    stroke-width: 2;
+    fill: none;
+}
+
+.bracket-line.live {
+    stroke: var(--red);
+    stroke-dasharray: 6 8;
+    animation: dash-run 22s linear infinite;
+}
+
+/* ── Respeta la preferencia de movimiento reducido ───────────────── */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .tilt-host:hover .tilt {
+        transform: none;
+    }
+}

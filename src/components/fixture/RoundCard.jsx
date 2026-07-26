@@ -1,103 +1,99 @@
-import { useTheme } from "../../context/ThemeContext";
 import MatchCard from "./MatchCard";
+import { formatDateLong } from "../../data/fixture";
 
-// 1ª Fecha = 08/03/2026 — Fecha 5 en adelante se corre una semana (05/04 suspendida)
-const ROUND_START_DATE = new Date(2026, 2, 8); // 8 de marzo 2026
+export default function RoundCard({ round, isSelected, onClick, delay = 0 }) {
+    const total = round.matches.length;
+    const played = round.matches.filter((m) => m.result !== null).length;
+    const allDone = played === total;
+    const started = played > 0;
 
-export function getRoundDate(roundNumber) {
-    const date = new Date(ROUND_START_DATE);
-    const weeksOffset = roundNumber >= 5 ? roundNumber : roundNumber - 1;
-    date.setDate(date.getDate() + weeksOffset * 7);
-    return date.toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-    });
-}
-
-export default function RoundCard({ round, isSelected, onClick }) {
-    const { theme } = useTheme();
-    const totalMatches = round.matches.length;
-    const playedMatches = round.matches.filter((m) => m.result !== null).length;
-    const allDone = playedMatches === totalMatches;
-    const hasAny = playedMatches > 0;
-
-    const roundDate = getRoundDate(round.round);
+    const dot = allDone ? "var(--ok)" : started ? "var(--red)" : "var(--line-strong)";
 
     return (
-        <div
-            className="rounded-2xl overflow-hidden transition-all duration-200"
+        <section
+            className="a-rise overflow-hidden rounded-3xl transition-all duration-300"
             style={{
-                border: `1px solid ${isSelected ? "#A90000" : theme.border}`,
-                boxShadow: isSelected ? "0 4px 20px rgba(169,0,0,0.15)" : theme.shadowCard,
+                background: "var(--surface)",
+                boxShadow: isSelected ? "var(--nm-in)" : "var(--nm)",
+                "--d": `${delay}ms`,
             }}
         >
-            {/* Header */}
             <button
                 onClick={onClick}
-                className="w-full flex items-center justify-between px-5 py-4 transition-colors duration-200"
-                style={{ backgroundColor: isSelected ? "#A9000015" : theme.bgCard }}
+                aria-expanded={isSelected}
+                className="flex w-full items-center gap-3 px-4 py-4 text-left sm:px-5"
             >
-                <div className="flex items-center gap-3">
-                    <div
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{
-                            backgroundColor: allDone
-                                ? theme.textGreen
-                                : hasAny
-                                    ? "#A90000"
-                                    : theme.border,
-                        }}
-                    />
-                    <div className="flex flex-col items-start">
-                        <span
-                            className="font-black uppercase tracking-wider text-sm"
-                            style={{ color: theme.textPrimary }}
-                        >
-                            {round.label}
-                        </span>
-                        <span
-                            className="text-xs font-medium"
-                            style={{ color: theme.textMuted }}
-                        >
-                            {roundDate}
-                        </span>
-                    </div>
-                </div>
+                {/* Número de fecha en relieve */}
+                <span
+                    className="display flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl transition-all duration-300"
+                    style={
+                        isSelected
+                            ? {
+                                color: "#fff",
+                                background: "linear-gradient(145deg, var(--red-bright), var(--red))",
+                                boxShadow: "0 5px 16px -6px var(--red)",
+                            }
+                            : {
+                                color: "var(--text-2)",
+                                background: "var(--surface)",
+                                boxShadow: "var(--nm-sm)",
+                            }
+                    }
+                >
+                    {round.round}
+                </span>
 
-                <div className="flex items-center gap-3">
-                    <span className="text-xs" style={{ color: theme.textMuted }}>
-                        {playedMatches}/{totalMatches}
+                <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                    <span
+                        className="display truncate text-lg"
+                        style={{ color: "var(--text-1)" }}
+                    >
+                        {round.label}
+                    </span>
+                    <span
+                        className="cond text-[0.68rem] font-semibold uppercase tracking-[0.14em]"
+                        style={{ color: "var(--text-3)" }}
+                    >
+                        {formatDateLong(round.date)}
+                    </span>
+                </span>
+
+                <span className="flex shrink-0 items-center gap-2.5">
+                    <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ background: dot }}
+                    />
+                    <span
+                        className="tabular text-sm"
+                        style={{ color: "var(--text-3)" }}
+                    >
+                        {played}/{total}
                     </span>
                     <svg
-                        className="w-4 h-4 transition-transform duration-200"
+                        className="h-4 w-4 transition-transform duration-300"
                         style={{
-                            color: theme.textMuted,
-                            transform: isSelected ? "rotate(180deg)" : "rotate(0deg)",
+                            color: "var(--text-3)",
+                            transform: isSelected ? "rotate(180deg)" : "none",
                         }}
+                        viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                     >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path d="M6 9l6 6 6-6" />
                     </svg>
-                </div>
+                </span>
             </button>
 
-            {/* Partidos */}
             {isSelected && (
-                <div
-                    className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4"
-                    style={{
-                        backgroundColor: theme.bgApp,
-                        borderTop: `1px solid ${theme.border}`,
-                    }}
-                >
-                    {round.matches.map((match) => (
-                        <MatchCard key={match.id} match={match} />
+                <div className="grid grid-cols-1 gap-3 px-3 pb-4 sm:grid-cols-2 sm:px-4">
+                    {round.matches.map((match, i) => (
+                        <MatchCard key={match.id} match={match} delay={i * 45} />
                     ))}
                 </div>
             )}
-        </div>
+        </section>
     );
 }

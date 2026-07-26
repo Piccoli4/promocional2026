@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/ui/Layout";
+import Basketball3D from "../components/ui/Basketball3D";
+import TeamLogo from "../components/ui/TeamLogo";
+import { StatTile, Spinner, Chip } from "../components/ui/Primitives";
 import LastRoundResults from "../components/fixture/LastRoundResults";
 import NextRound from "../components/fixture/NextRound";
 import StandingsMini from "../components/standings/StandingsMini";
@@ -8,196 +11,224 @@ import PlayoffMini from "../components/playoffs/PlayoffMini";
 import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
 import { usePlayoffs } from "../hooks/usePlayoffs";
-import { useTheme } from "../context/ThemeContext";
 import { requestNotificationPermission } from "../services/messaging";
-import logo from "../assets/UyP.png";
+import { formatDateLong } from "../data/fixture";
+import { teamShortNames } from "../data/teamLogos";
+
+/** Días que faltan para una fecha ISO (negativo si ya pasó). */
+function daysUntil(iso) {
+    if (!iso) return null;
+    const [y, m, d] = iso.split("-").map(Number);
+    const target = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((target - today) / 86_400_000);
+}
+
+function CountdownPill({ date }) {
+    const days = daysUntil(date);
+    if (days === null) return null;
+
+    const text =
+        days > 1 ? `Faltan ${days} días` : days === 1 ? "Es mañana" : days === 0 ? "Se juega hoy" : formatDateLong(date);
+
+    return (
+        <span
+            className="nm-in-sm cond inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em]"
+            style={{ color: days <= 1 && days >= 0 ? "var(--red)" : "var(--text-2)" }}
+        >
+            <span
+                className={`h-2 w-2 rounded-full ${days <= 1 && days >= 0 ? "a-pulse" : ""}`}
+                style={{ background: days <= 1 && days >= 0 ? "var(--red)" : "var(--text-3)" }}
+            />
+            {text}
+        </span>
+    );
+}
+
+/* ── Botón de alertas push ────────────────────────────────────────── */
+
+/** idle | loading | granted | denied — se lee del navegador al montar. */
+function initialNotificationStatus() {
+    if (!("Notification" in window)) return "unsupported";
+    if (Notification.permission === "granted") return "granted";
+    if (Notification.permission === "denied") return "denied";
+    return "idle";
+}
+
+function NotificationButton() {
+    const [status, setStatus] = useState(initialNotificationStatus);
+
+    if (status === "unsupported") return null;
+
+    if (status === "granted") {
+        return <Chip tone="ok">🔔 Alertas activas</Chip>;
+    }
+
+    const handleClick = async () => {
+        setStatus("loading");
+        const token = await requestNotificationPermission();
+        setStatus(token ? "granted" : "denied");
+    };
+
+    return (
+        <button
+            onClick={handleClick}
+            disabled={status === "loading" || status === "denied"}
+            className="nm-btn px-5 py-2.5 text-xs"
+        >
+            {status === "loading"
+                ? "..."
+                : status === "denied"
+                    ? "🔕 Bloqueadas"
+                    : "🔔 Activar alertas"}
+        </button>
+    );
+}
+
+/* ── Página ───────────────────────────────────────────────────────── */
 
 export default function Home() {
     const { fixtureWithResults, loading: fixtureLoading } = useFixture();
     const { standings, loading: standingsLoading } = useStandings();
     const { bracket, loading: playoffsLoading } = usePlayoffs();
-    const { theme } = useTheme();
-    const [notifStatus, setNotifStatus] = useState("idle"); // idle | loading | granted | denied
 
-    // Verificar si ya tiene permiso al cargar
-    useEffect(() => {
-        if (!('Notification' in window)) return;
-        if (Notification.permission === "granted") setNotifStatus("granted");
-        if (Notification.permission === "denied") setNotifStatus("denied");
-    }, []);
+    const { lastPlayed, nextRound, played, total, started, regularOver } = useMemo(() => {
+        const total = fixtureWithResults.reduce((a, r) => a + r.matches.length, 0);
+        const played = fixtureWithResults.reduce(
+            (a, r) => a + r.matches.filter((m) => m.result !== null).length,
+            0
+        );
+        return {
+            total,
+            played,
+            started: played > 0,
+            regularOver: total > 0 && played === total,
+            lastPlayed: [...fixtureWithResults]
+                .reverse()
+                .find((r) => r.matches.some((m) => m.result !== null)),
+            nextRound: fixtureWithResults.find((r) =>
+                r.matches.some((m) => m.result === null)
+            ),
+        };
+    }, [fixtureWithResults]);
 
-    const handleSubscribe = async () => {
-        setNotifStatus("loading");
-        const token = await requestNotificationPermission();
-        if (token) {
-            setNotifStatus("granted");
-        } else {
-            setNotifStatus("denied");
-        }
-    };
-
-    const lastPlayedRound = [...fixtureWithResults]
-        .reverse()
-        .find((r) => r.matches.some((m) => m.result !== null));
-
-    const nextRound = fixtureWithResults.find((r) =>
-        r.matches.every((m) => m.result === null)
-    );
-
-    const tournamentStarted = fixtureWithResults.some((r) =>
-        r.matches.some((m) => m.result !== null)
-    );
-
-    // ¿La fase regular terminó? (todas las fechas tienen resultados en todos los partidos)
-    const regularPhaseOver = fixtureWithResults.length > 0 &&
-        fixtureWithResults.every((r) => r.matches.every((m) => m.result !== null));
+    const leader = standings[0];
 
     return (
         <Layout>
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-9">
 
-                {/* Hero */}
-                <div
-                    className="rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 transition-all duration-300"
-                    style={{
-                        background: theme.bgHero,
-                        boxShadow: theme.shadow,
-                        border: `1px solid ${theme.border}`,
-                    }}
-                >
-                    <img
-                        src={logo}
-                        alt="UyP Logo"
-                        className="h-24 w-24 sm:h-32 sm:w-32 object-contain shrink-0"
-                    />
-                    <div className="flex flex-col gap-2 text-center sm:text-left">
-                        <p
-                            className="text-xs uppercase tracking-widest font-semibold"
-                            style={{ color: theme.textHeroSub }}
-                        >
-                            Unión y Progreso — Básquet
-                        </p>
-                        <h1
-                            className="text-3xl sm:text-4xl font-black uppercase leading-tight"
-                            style={{ color: theme.textHeroTitle }}
-                        >
-                            Torneo Promocional 2026
-                        </h1>
-                        <p className="text-sm" style={{ color: theme.textHeroDesc }}>
-                            {regularPhaseOver
-                                ? "Fase Regular finalizada · Playoffs en curso"
-                                : "Fase Clasificatoria · 12 equipos · 11 fechas"}
-                        </p>
-                        <div className="flex gap-3 mt-2 justify-center sm:justify-start flex-wrap">
-                            <Link
-                                to="/tabla"
-                                className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200"
-                                style={{ backgroundColor: "#A90000", color: "#ffffff" }}
-                            >
-                                Ver Tabla
-                            </Link>
-                            <Link
-                                to="/playoffs"
-                                className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200"
-                                style={{
-                                    backgroundColor: "transparent",
-                                    border: `1px solid ${theme.borderHeroBtn}`,
-                                    color: theme.textHeroBtn,
-                                }}
-                            >
-                                🏆 Playoffs
-                            </Link>
-                            <Link
-                                to="/fixture"
-                                className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200"
-                                style={{
-                                    backgroundColor: "transparent",
-                                    border: `1px solid ${theme.borderHeroBtn}`,
-                                    color: theme.textHeroBtn,
-                                }}
-                            >
-                                Ver Fixture
-                            </Link>
-
-                            {/* Botón notificaciones — solo si el browser lo soporta */}
-                            {'Notification' in window && notifStatus !== "granted" && (
-                                <button
-                                    onClick={handleSubscribe}
-                                    disabled={notifStatus === "loading" || notifStatus === "denied"}
-                                    className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide transition-all duration-200 disabled:opacity-50"
-                                    style={{
-                                        backgroundColor: "transparent",
-                                        border: `1px solid ${theme.borderHeroBtn}`,
-                                        color: theme.textHeroBtn,
-                                    }}
-                                >
-                                    {notifStatus === "loading" ? "..." :
-                                     notifStatus === "denied" ? "🔕 Bloqueadas" :
-                                     "🔔 Activar alertas"}
-                                </button>
-                            )}
-
-                            {notifStatus === "granted" && (
-                                <span
-                                    className="px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide"
-                                    style={{ color: theme.textGreen }}
-                                >
-                                    🔔 Alertas activas
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Torneo no iniciado */}
-                {!fixtureLoading && !tournamentStarted && (
+                {/* ── Hero ── */}
+                <section className="nm-lg nm-edge scene a-rise relative overflow-hidden px-5 py-7 sm:px-9 sm:py-10">
                     <div
-                        className="rounded-2xl p-8 flex flex-col items-center gap-3 text-center"
+                        className="pointer-events-none absolute inset-0"
                         style={{
-                            backgroundColor: theme.bgCard,
-                            border: `1px solid ${theme.border}`,
-                            boxShadow: theme.shadowCard,
+                            background:
+                                "radial-gradient(30rem 18rem at 85% 10%, var(--red-ghost), transparent 68%)",
                         }}
+                    />
+
+                    <div className="tilt relative flex flex-col items-center gap-7 sm:flex-row sm:gap-9">
+                        <Basketball3D size={150} className="layer-2" />
+
+                        <div className="flex min-w-0 flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+                            <p
+                                className="cond text-[0.7rem] font-bold uppercase tracking-[0.24em]"
+                                style={{ color: "var(--red)" }}
+                            >
+                                Asociación Santafesina de Básquetbol
+                            </p>
+
+                            <h1
+                                className="display text-5xl leading-[0.92] sm:text-6xl"
+                                style={{ color: "var(--text-1)" }}
+                            >
+                                Torneo Oficial
+                                <br />
+                                Promocional 2026
+                            </h1>
+
+                            <p className="max-w-md text-sm" style={{ color: "var(--text-2)" }}>
+                                {regularOver
+                                    ? "Fase regular terminada. Arranca la definición: Play In, Cuartos, Semis y Final."
+                                    : "Zona única de 12 equipos · 11 fechas · del 2 de agosto al 11 de octubre."}
+                            </p>
+
+                            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
+                                {!regularOver && nextRound && <CountdownPill date={nextRound.date} />}
+                                <Link to="/tabla" className="nm-btn nm-btn-accent px-5 py-2.5 text-xs">
+                                    Ver tabla
+                                </Link>
+                                <Link to="/fixture" className="nm-btn px-5 py-2.5 text-xs">
+                                    Fixture
+                                </Link>
+                                <Link to="/playoffs" className="nm-btn px-5 py-2.5 text-xs">
+                                    🏆 Fase final
+                                </Link>
+                                <NotificationButton />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Franja de estadísticas ── */}
+                <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <StatTile label="Equipos" value="12" delay={0} />
+                    <StatTile label="Fechas" value="11" delay={70} />
+                    <StatTile
+                        label="Partidos jugados"
+                        value={fixtureLoading ? "–" : `${played}/${total}`}
+                        tone="accent"
+                        delay={140}
+                    />
+                    <div
+                        className="nm nm-edge a-rise flex flex-col items-center justify-center gap-1 px-2 py-4"
+                        style={{ "--d": "210ms" }}
                     >
-                        <span className="text-4xl">🏀</span>
-                        <p className="font-bold text-lg uppercase tracking-wide" style={{ color: theme.textPrimary }}>
-                            El torneo aún no comenzó
-                        </p>
-                        <p className="text-sm" style={{ color: theme.textMuted }}>
-                            Los resultados aparecerán aquí una vez que se juegue la primera fecha
-                        </p>
+                        {leader && leader.played > 0 ? (
+                            <>
+                                <TeamLogo team={leader.team} size={34} />
+                                <span
+                                    className="cond truncate text-[0.72rem] font-bold uppercase tracking-wide"
+                                    style={{ color: "var(--text-1)" }}
+                                >
+                                    {teamShortNames[leader.team] ?? leader.team}
+                                </span>
+                            </>
+                        ) : (
+                            <span className="display text-3xl" style={{ color: "var(--text-3)" }}>
+                                –
+                            </span>
+                        )}
+                        <span
+                            className="cond text-[0.66rem] font-bold uppercase tracking-[0.14em]"
+                            style={{ color: "var(--text-3)" }}
+                        >
+                            Puntero
+                        </span>
                     </div>
+                </section>
+
+                {fixtureLoading && <Spinner />}
+
+                {/* ── Torneo sin arrancar ── */}
+                {!fixtureLoading && !started && (
+                    <>
+                        {nextRound && <NextRound round={nextRound} />}
+                        <StandingsMini standings={standings} loading={standingsLoading} />
+                    </>
                 )}
 
-                {/* Contenido principal */}
-                {tournamentStarted && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="flex flex-col gap-8">
-                            {/* Última fecha jugada (fase regular) */}
-                            {!fixtureLoading && lastPlayedRound && !regularPhaseOver && (
-                                <LastRoundResults round={lastPlayedRound} />
-                            )}
-                            {/* Próxima fecha (fase regular) */}
-                            {!fixtureLoading && nextRound && (
-                                <NextRound round={nextRound} />
-                            )}
-                            {/* Playoffs mini */}
-                            {!playoffsLoading && (
-                                <PlayoffMini bracket={bracket} loading={playoffsLoading} />
-                            )}
+                {/* ── Torneo en curso ── */}
+                {!fixtureLoading && started && (
+                    <div className="grid grid-cols-1 gap-9 lg:grid-cols-2">
+                        <div className="flex flex-col gap-9">
+                            {lastPlayed && !regularOver && <LastRoundResults round={lastPlayed} />}
+                            {nextRound && <NextRound round={nextRound} />}
+                            <PlayoffMini bracket={bracket} loading={playoffsLoading} />
                         </div>
-                        <div>
-                            <StandingsMini standings={standings} loading={standingsLoading} />
-                        </div>
-                    </div>
-                )}
-
-                {fixtureLoading && (
-                    <div className="flex items-center justify-center py-20">
-                        <div
-                            className="w-10 h-10 rounded-full border-4 animate-spin"
-                            style={{ borderColor: "#A90000", borderTopColor: "transparent" }}
-                        />
+                        <StandingsMini standings={standings} loading={standingsLoading} />
                     </div>
                 )}
             </div>

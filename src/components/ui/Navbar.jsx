@@ -1,198 +1,209 @@
-import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import logo from "../../assets/UyP.png";
 
-const navLinks = [
-    { to: "/", label: "Inicio" },
-    { to: "/tabla", label: "Tabla" },
-    { to: "/fixture", label: "Fixture" },
-    { to: "/playoffs", label: "Playoffs" },
+/* ── Iconografía (SVG inline, hereda currentColor) ─────────────────── */
+
+const Icon = {
+    home: (
+        <path d="M3 10.6 12 3.5l9 7.1V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
+    ),
+    table: (
+        <>
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M3 9.5h18M3 15h18M9 4v16" />
+        </>
+    ),
+    calendar: (
+        <>
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+        </>
+    ),
+    trophy: (
+        <>
+            <path d="M7 4h10v5a5 5 0 0 1-10 0z" />
+            <path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5A3.5 3.5 0 0 1 16.5 11" />
+            <path d="M12 14v3M9 20h6M10 17h4" />
+        </>
+    ),
+    shield: (
+        <path d="M12 3l7 3v5.5c0 4.4-2.9 8.2-7 9.5-4.1-1.3-7-5.1-7-9.5V6z" />
+    ),
+};
+
+function NavIcon({ name, active }) {
+    // Los iconos son de contorno: rellenarlos los convertiría en manchas.
+    // El estado activo se marca con color, grosor y el hueco neumórfico.
+    return (
+        <svg
+            className="h-5 w-5 transition-[stroke-width] duration-300"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={active ? 2.4 : 1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            {Icon[name]}
+        </svg>
+    );
+}
+
+const LINKS = [
+    { to: "/", label: "Inicio", icon: "home" },
+    { to: "/tabla", label: "Tabla", icon: "table" },
+    { to: "/fixture", label: "Fixture", icon: "calendar" },
+    { to: "/playoffs", label: "Fase Final", icon: "trophy" },
 ];
 
-function ThemeToggleButton({ isDark, toggleTheme, theme }) {
+/* ── Interruptor de tema: knob neumórfico que se desliza ──────────── */
+
+function ThemeToggle() {
+    const { isDark, toggleTheme } = useTheme();
+
     return (
         <button
             onClick={toggleTheme}
-            className="relative w-12 h-6 rounded-full transition-all duration-300 focus:outline-none shrink-0"
-            style={{
-                backgroundColor: isDark ? "#A90000" : "#00005522",
-                border: `1px solid ${isDark ? "#A90000" : "#00005533"}`,
-            }}
+            className="nm-in-sm relative h-9 w-16 shrink-0 rounded-full"
             title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            aria-label={isDark ? "Activar modo claro" : "Activar modo oscuro"}
         >
-            <div
-                className="absolute top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs transition-all duration-300"
+            <span
+                className="absolute top-1 flex h-7 w-7 items-center justify-center rounded-full text-sm transition-[left] duration-400 cursor-pointer"
                 style={{
-                    left: isDark ? "calc(100% - 1.375rem)" : "0.125rem",
-                    backgroundColor: isDark ? "#ffffff" : "#000055",
+                    left: isDark ? "calc(100% - 2rem)" : "0.25rem",
+                    background: "var(--surface)",
+                    boxShadow: "var(--nm-xs)",
+                    transitionTimingFunction: "var(--ease-spring)",
                 }}
             >
                 {isDark ? "🌙" : "☀️"}
-            </div>
+            </span>
         </button>
     );
 }
 
-export default function Navbar() {
+/* ── Barra superior ───────────────────────────────────────────────── */
+
+export function TopBar() {
     const { isAdmin, logout } = useAuth();
-    const { isDark, toggleTheme, theme } = useTheme();
     const navigate = useNavigate();
-    const [menuOpen, setMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         await logout();
         navigate("/");
     };
 
-    return (
-        <nav
-            className="sticky top-0 z-50 transition-colors duration-300"
-            style={{
-                backgroundColor: theme.bgNav,
-                boxShadow: isDark
-                    ? "0 2px 20px rgba(0,0,0,0.3)"
-                    : "0 2px 20px rgba(0,0,85,0.1)",
-                borderBottom: `1px solid ${theme.border}`,
-            }}
-        >
-            <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+    const links = isAdmin
+        ? [...LINKS, { to: "/admin", label: "Admin", icon: "shield" }]
+        : LINKS;
 
-                {/* Logo + Título */}
-                <NavLink to="/" className="flex items-center gap-3 shrink-0">
-                    <img src={logo} alt="UyP" className="h-10 w-10 object-contain" />
-                    <div className="flex flex-col leading-tight">
+    return (
+        <header className="sticky top-0 z-40 px-3 pt-3 sm:px-5 sm:pt-4">
+            <div
+                className="nm nm-edge mx-auto flex max-w-6xl items-center gap-3 px-3 py-2.5 sm:px-5 sm:py-3"
+                style={{ backdropFilter: "blur(6px)" }}
+            >
+                <NavLink to="/" className="flex min-w-0 items-center gap-3">
+                    <span className="nm-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl p-1.5">
+                        <img src={logo} alt="Unión y Progreso" className="h-full w-full object-contain" />
+                    </span>
+                    <span className="flex min-w-0 flex-col leading-none">
                         <span
-                            className="font-black text-base tracking-wide uppercase transition-colors duration-300"
-                            style={{ color: theme.textNav }}
+                            className="display truncate text-lg sm:text-xl"
+                            style={{ color: "var(--text-1)" }}
                         >
                             Unión y Progreso
                         </span>
                         <span
-                            className="text-xs tracking-widest uppercase transition-colors duration-300"
-                            style={{ color: theme.textNavMuted }}
+                            className="cond truncate text-[0.62rem] font-bold uppercase tracking-[0.18em]"
+                            style={{ color: "var(--red)" }}
                         >
-                            Torneo Promocional 2026
+                            Oficial 2026
                         </span>
-                    </div>
+                    </span>
                 </NavLink>
 
-                {/* Links escritorio */}
-                <div className="hidden md:flex items-center gap-6">
-                    {navLinks.map((link) => (
+                {/* Enlaces de escritorio */}
+                <nav className="ml-auto hidden items-center gap-1 md:flex">
+                    {links.map((link) => (
                         <NavLink
                             key={link.to}
                             to={link.to}
                             end={link.to === "/"}
                             className={({ isActive }) =>
-                                `text-sm uppercase tracking-wider font-semibold pb-0.5 transition-all duration-200 border-b-2 ${isActive ? "border-red-700" : "border-transparent"
-                                }`
+                                `nm-btn flex items-center gap-2 px-4 py-2 text-xs ${isActive ? "nm-btn-on" : ""}`
                             }
-                            style={({ isActive }) => ({
-                                color: isActive ? theme.textNavActive : theme.textNavLink,
-                            })}
                         >
-                            {link.label}
+                            {({ isActive }) => (
+                                <>
+                                    <NavIcon name={link.icon} active={isActive} />
+                                    {link.label}
+                                </>
+                            )}
                         </NavLink>
                     ))}
+                </nav>
 
-                    {isAdmin && (
-                        <NavLink
-                            to="/admin"
-                            className={({ isActive }) =>
-                                `text-sm uppercase tracking-wider font-semibold pb-0.5 transition-all duration-200 border-b-2 ${isActive ? "border-red-700" : "border-transparent"
-                                }`
-                            }
-                            style={({ isActive }) => ({
-                                color: isActive ? theme.textNavActive : theme.textNavLink,
-                            })}
-                        >
-                            Admin
-                        </NavLink>
-                    )}
-                </div>
-
-                {/* Derecha */}
-                <div className="flex items-center gap-3">
-                    <ThemeToggleButton isDark={isDark} toggleTheme={toggleTheme} theme={theme} />
-
+                <div className="ml-auto flex items-center gap-2 md:ml-2">
+                    <ThemeToggle />
                     {isAdmin && (
                         <button
                             onClick={handleLogout}
-                            className="hidden md:block text-xs font-bold uppercase tracking-wider text-white px-3 py-1.5 rounded-lg transition-all duration-200"
-                            style={{ backgroundColor: "#A90000" }}
-                            onMouseEnter={e => e.target.style.backgroundColor = "#8a0000"}
-                            onMouseLeave={e => e.target.style.backgroundColor = "#A90000"}
+                            className="nm-btn hidden px-4 py-2 text-xs md:block"
                         >
                             Salir
                         </button>
                     )}
-
-                    {/* Hamburguesa */}
-                    <button
-                        className="md:hidden transition-colors duration-300"
-                        style={{ color: theme.textNavLink }}
-                        onClick={() => setMenuOpen(!menuOpen)}
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {menuOpen ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            )}
-                        </svg>
-                    </button>
                 </div>
             </div>
+        </header>
+    );
+}
 
-            {/* Menú mobile */}
-            {menuOpen && (
-                <div
-                    className="md:hidden px-4 pt-2 pb-4 flex flex-col gap-3 transition-colors duration-300"
-                    style={{
-                        backgroundColor: theme.bgNavMobile,
-                        borderTop: `1px solid ${theme.border}`,
-                    }}
-                >
-                    {navLinks.map((link) => (
-                        <NavLink
-                            key={link.to}
-                            to={link.to}
-                            end={link.to === "/"}
-                            onClick={() => setMenuOpen(false)}
-                            className="text-sm uppercase tracking-wider font-semibold py-1 transition-colors duration-200"
-                            style={({ isActive }) => ({
-                                color: isActive ? theme.textNavActive : theme.textNavLink,
-                            })}
-                        >
-                            {link.label}
-                        </NavLink>
-                    ))}
+/* ── Barra inferior (móvil) ───────────────────────────────────────── */
 
-                    {isAdmin && (
-                        <>
-                            <NavLink
-                                to="/admin"
-                                onClick={() => setMenuOpen(false)}
-                                className="text-sm uppercase tracking-wider font-semibold py-1 transition-colors duration-200"
-                                style={({ isActive }) => ({
-                                    color: isActive ? theme.textNavActive : theme.textNavLink,
-                                })}
-                            >
-                                Admin
-                            </NavLink>
-                            <button
-                                onClick={handleLogout}
-                                className="text-xs font-bold uppercase tracking-wider text-white px-3 py-2 rounded-lg w-fit"
-                                style={{ backgroundColor: "#A90000" }}
-                            >
-                                Cerrar sesión
-                            </button>
-                        </>
-                    )}
-                </div>
-            )}
+export function BottomNav() {
+    const { isAdmin } = useAuth();
+    const links = isAdmin
+        ? [...LINKS, { to: "/admin", label: "Admin", icon: "shield" }]
+        : LINKS;
+
+    return (
+        <nav
+            className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 md:hidden"
+            style={{
+                background:
+                    "linear-gradient(to top, var(--bg) 55%, transparent)",
+            }}
+        >
+            <div className="nm nm-edge mx-auto flex max-w-md items-stretch justify-between gap-1 p-1.5">
+                {links.map((link) => (
+                    <NavLink
+                        key={link.to}
+                        to={link.to}
+                        end={link.to === "/"}
+                        className="group flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 transition-all duration-300"
+                        style={({ isActive }) => ({
+                            color: isActive ? "var(--red)" : "var(--text-3)",
+                            boxShadow: isActive ? "var(--nm-in-sm)" : "none",
+                            background: isActive ? "var(--sunken)" : "transparent",
+                        })}
+                    >
+                        {({ isActive }) => (
+                            <>
+                                <NavIcon name={link.icon} active={isActive} />
+                                <span className="cond text-[0.6rem] font-bold uppercase tracking-wider">
+                                    {link.label}
+                                </span>
+                            </>
+                        )}
+                    </NavLink>
+                ))}
+            </div>
         </nav>
     );
 }
