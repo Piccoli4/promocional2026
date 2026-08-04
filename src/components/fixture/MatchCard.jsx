@@ -1,6 +1,8 @@
+import { Link } from "react-router-dom";
 import TeamLogo from "../ui/TeamLogo";
 import { teamShortNames } from "../../data/teamLogos";
 import { formatDateLong } from "../../data/fixture";
+import { useMatchesWithStats } from "../../hooks/useStats";
 
 /**
  * Tarjeta de partido con estética de marcador: cada equipo tiene su
@@ -69,6 +71,7 @@ export default function MatchCard({ match, highlightTeam = null, date, delay = 0
     const homeWon = played && homeScore > awayScore;
     const awayWon = played && awayScore > homeScore;
     const walkover = played && result.walkover;
+    const conPlanilla = useMatchesWithStats().has(match.id);
 
     return (
         <article
@@ -104,7 +107,7 @@ export default function MatchCard({ match, highlightTeam = null, date, delay = 0
                 highlighted={highlightTeam === match.away}
             />
 
-            {(date || walkover) && (
+            {(date || walkover || conPlanilla) && (
                 <div className="flex items-center justify-between gap-2 px-2 pt-1.5">
                     <span
                         className="cond text-[0.65rem] font-semibold uppercase tracking-[0.14em]"
@@ -112,14 +115,26 @@ export default function MatchCard({ match, highlightTeam = null, date, delay = 0
                     >
                         {date ? formatDateLong(date) : ""}
                     </span>
-                    {walkover && (
-                        <span
-                            className="cond text-[0.6rem] font-bold uppercase tracking-[0.14em]"
-                            style={{ color: "var(--warn)" }}
-                        >
-                            Ganó por default
-                        </span>
-                    )}
+
+                    <span className="flex items-center gap-3">
+                        {walkover && (
+                            <span
+                                className="cond text-[0.6rem] font-bold uppercase tracking-[0.14em]"
+                                style={{ color: "var(--warn)" }}
+                            >
+                                Ganó por default
+                            </span>
+                        )}
+                        {conPlanilla && (
+                            <Link
+                                to={`/partido/${match.id}`}
+                                className="cond text-[0.62rem] font-bold uppercase tracking-[0.14em]"
+                                style={{ color: "var(--red)" }}
+                            >
+                                Planilla →
+                            </Link>
+                        )}
+                    </span>
                 </div>
             )}
         </article>

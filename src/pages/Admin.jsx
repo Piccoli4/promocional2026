@@ -2,14 +2,18 @@ import { useState } from "react";
 import Layout from "../components/ui/Layout";
 import MatchResultForm from "../components/admin/MatchResultForm";
 import PlayoffAdminPanel from "../components/admin/PlayoffAdminPanel";
+import StatsUploadPanel from "../components/admin/StatsUploadPanel";
 import { SectionTitle, ProgressBar, Spinner } from "../components/ui/Primitives";
 import { useFixture } from "../hooks/useFixture";
 import { useAuth } from "../context/AuthContext";
 import { formatDateLong } from "../data/fixture";
 
+// Con tres pestañas ya no entran las etiquetas largas en un celular angosto,
+// así que cada una lleva también su versión corta.
 const TABS = [
-    { id: "regular", label: "🏀 Fase Regular" },
-    { id: "playoffs", label: "🏆 Fase Final" },
+    { id: "regular", icon: "🏀", label: "Fase Regular", corto: "Regular" },
+    { id: "playoffs", icon: "🏆", label: "Fase Final", corto: "Final" },
+    { id: "stats", icon: "📊", label: "Estadísticas", corto: "Stats" },
 ];
 
 export default function Admin() {
@@ -54,7 +58,9 @@ export default function Admin() {
                             onClick={() => setTab(t.id)}
                             className={`nm-btn flex-1 py-3 text-xs ${tab === t.id ? "nm-btn-on" : ""}`}
                         >
-                            {t.label}
+                            <span aria-hidden="true">{t.icon}</span>{" "}
+                            <span className="sm:hidden">{t.corto}</span>
+                            <span className="hidden sm:inline">{t.label}</span>
                         </button>
                     ))}
                 </div>
@@ -124,6 +130,8 @@ export default function Admin() {
                 )}
 
                 {tab === "playoffs" && <PlayoffAdminPanel />}
+
+                {tab === "stats" && <StatsUploadPanel />}
             </div>
         </Layout>
     );

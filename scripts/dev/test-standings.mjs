@@ -2,8 +2,11 @@
  * Pruebas de la tabla de posiciones y los desempates FIBA.
  * Uso: node scripts/dev/test-standings.mjs
  */
-import { calculateStandings } from "../../src/utils/standingsCalculator.js";
+import { calculateStandings, TEAM_SANCTIONS } from "../../src/utils/standingsCalculator.js";
 import { FIXTURE, TEAMS } from "../../src/data/fixture.js";
+
+/** Total de puntos descontados por sanción en el torneo en curso. */
+const TOTAL_SANCIONES = Object.values(TEAM_SANCTIONS).reduce((a, s) => a + s, 0);
 
 let ok = true;
 const check = (label, actual, expected) => {
@@ -38,19 +41,49 @@ const win = (results, winner, loser, forPts, againstPts, walkover = null) => {
 const posOf = (table, team) => table.findIndex((e) => e.team === team) + 1;
 const entry = (table, team) => table.find((e) => e.team === team);
 
-/* ── 1. Puntaje base y sanción ─────────────────────────────────────── */
+/* ── 1. Puntaje base ───────────────────────────────────────────────── */
 {
     const R = {};
     win(R, "KIMBERLEY", "ALIANZA", 80, 70);
-    const t = calculateStandings(R, FIXTURE);
+    const t = calculateStandings(R, FIXTURE, {});
 
     check("Ganador suma 2", entry(t, "KIMBERLEY").points, 2);
     check("Perdedor suma 1", entry(t, "ALIANZA").points, 1);
     check("Equipo sin jugar queda en 0", entry(t, "ALUMNI").points, 0);
-    check("Sanción de UyP A se resta", entry(t, "U. Y PROGRESO A").points, -1);
     check("Diferencia del ganador", entry(t, "KIMBERLEY").pointsDiff, 10);
     check("La tabla tiene 12 equipos", t.length, 12);
     check("Se numeran las posiciones", t[0].position, 1);
+}
+
+/* ── 1b. Descuento por sanción ─────────────────────────────────────── */
+{
+    // Las sanciones cambian de un torneo a otro y hoy `TEAM_SANCTIONS` está
+    // vacío. Inyectamos una para que el mecanismo quede probado igual, en vez
+    // de fijar en el test los equipos sancionados de una temporada pasada.
+    const R = {};
+    win(R, "KIMBERLEY", "ALIANZA", 80, 70);
+    const t = calculateStandings(R, FIXTURE, { KIMBERLEY: 2, ALUMNI: 1 });
+
+    check("Se descuenta al ganador sancionado", entry(t, "KIMBERLEY").points, 0);
+    check("Se descuenta a un equipo que no jugó", entry(t, "ALUMNI").points, -1);
+    check("El equipo sin sanción queda intacto", entry(t, "ALIANZA").points, 1);
+    check("La sanción queda registrada en la entrada", entry(t, "KIMBERLEY").sanction, 2);
+    check("La sanción no altera la diferencia", entry(t, "KIMBERLEY").pointsDiff, 10);
+}
+
+/* ── 1c. Sanciones vigentes del torneo ─────────────────────────────── */
+{
+    const t = calculateStandings({}, FIXTURE);
+
+    Object.entries(TEAM_SANCTIONS).forEach(([team, penalty]) => {
+        check(`Sanción vigente de ${team}`, entry(t, team).points, -penalty);
+    });
+    check(
+        "Los equipos sin sanción arrancan en 0",
+        t.filter((e) => !(e.team in TEAM_SANCTIONS)).every((e) => e.points === 0),
+        true
+    );
+    console.log(`  (sanciones vigentes: ${TOTAL_SANCIONES || "ninguna"})`);
 }
 
 /* ── 2. Partido perdido por default ────────────────────────────────── */
@@ -117,8 +150,9 @@ const entry = (table, team) => table.find((e) => e.team === team);
     );
     const t = calculateStandings(R, FIXTURE);
     check("Todos juegan 11 partidos", t.every((e) => e.played === 11), true);
-    check("Total de puntos = 3 por partido + sanciones",
-        t.reduce((a, e) => a + e.points, 0), 66 * 3 - 1);
+    // Cada partido reparte 3 puntos (2 al ganador, 1 al perdedor).
+    check("Total de puntos = 3 por partido - sanciones",
+        t.reduce((a, e) => a + e.points, 0), 66 * 3 - TOTAL_SANCIONES);
     check("Suma de diferencias = 0", t.reduce((a, e) => a + e.pointsDiff, 0), 0);
     check("Sin equipos duplicados", new Set(t.map((e) => e.team)).size, TEAMS.length);
 }

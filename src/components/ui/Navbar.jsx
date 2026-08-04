@@ -31,6 +31,13 @@ const Icon = {
     shield: (
         <path d="M12 3l7 3v5.5c0 4.4-2.9 8.2-7 9.5-4.1-1.3-7-5.1-7-9.5V6z" />
     ),
+    chart: (
+        <>
+            <path d="M4 20V4" />
+            <path d="M4 20h16" />
+            <path d="M8.5 20v-6M13 20V8.5M17.5 20v-9" />
+        </>
+    ),
 };
 
 function NavIcon({ name, active }) {
@@ -52,11 +59,14 @@ function NavIcon({ name, active }) {
     );
 }
 
+// Con cinco ítems la barra inferior queda justa en pantallas angostas, así que
+// las etiquetas se mantienen cortas a propósito.
 const LINKS = [
     { to: "/", label: "Inicio", icon: "home" },
     { to: "/tabla", label: "Tabla", icon: "table" },
     { to: "/fixture", label: "Fixture", icon: "calendar" },
-    { to: "/playoffs", label: "Fase Final", icon: "trophy" },
+    { to: "/estadisticas", label: "Estadísticas", icon: "chart" },
+    { to: "/playoffs", label: "Final", icon: "trophy" },
 ];
 
 /* ── Interruptor de tema: knob neumórfico que se desliza ──────────── */

@@ -17,7 +17,7 @@ const WIN_POINTS = 2;
 const LOSS_POINTS = 1;
 const WALKOVER_POINTS = 0;
 
-const emptyEntry = (team) => ({
+const emptyEntry = (team, sanctions) => ({
     team,
     played: 0,
     won: 0,
@@ -26,7 +26,7 @@ const emptyEntry = (team) => ({
     pointsAgainst: 0,
     pointsDiff: 0,
     points: 0,
-    sanction: TEAM_SANCTIONS[team] ?? 0,
+    sanction: sanctions[team] ?? 0,
     walkovers: 0,
 });
 
@@ -55,11 +55,18 @@ function playedMatches(results, fixture) {
     return list;
 }
 
-/** Suma los partidos de `matches` en una tabla acotada a `teams`. */
-function tabulate(teams, matches) {
+/**
+ * Suma los partidos de `matches` en una tabla acotada a `teams`.
+ *
+ * Las sanciones se anotan en cada entrada pero no se descuentan acá: la resta
+ * ocurre en `calculateStandings`. Por eso la tabla reducida de desempates la
+ * llama sin sanciones — un descuento de puntos no debe alterar quién ganó el
+ * enfrentamiento directo.
+ */
+function tabulate(teams, matches, sanctions = {}) {
     const table = {};
     teams.forEach((t) => {
-        table[t] = emptyEntry(t);
+        table[t] = emptyEntry(t, sanctions);
     });
 
     matches.forEach((m) => {
@@ -156,9 +163,16 @@ function breakTie(group, allMatches) {
     return out;
 }
 
-export function calculateStandings(results = {}, fixture = []) {
+/**
+ * @param {Object} results   { [matchId]: { homeScore, awayScore, walkover } }
+ * @param {Array}  fixture   fechas con sus partidos
+ * @param {Object} [sanctions] descuentos por equipo; por defecto los del torneo.
+ *                             Se puede inyectar para probar el mecanismo aunque
+ *                             la temporada en curso no tenga sanciones.
+ */
+export function calculateStandings(results = {}, fixture = [], sanctions = TEAM_SANCTIONS) {
     const matches = playedMatches(results, fixture);
-    const table = tabulate(TEAMS, matches);
+    const table = tabulate(TEAMS, matches, sanctions);
 
     const standings = Object.values(table).map((entry) => ({
         ...entry,

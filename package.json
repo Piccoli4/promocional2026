@@ -8,12 +8,13 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check": "node scripts/dev/validate.mjs && node scripts/dev/test-standings.mjs && node scripts/dev/simulate-playoffs.mjs"
+    "check": "node scripts/dev/validate.mjs && node scripts/dev/test-standings.mjs && node scripts/dev/simulate-playoffs.mjs && node scripts/dev/test-stats.mjs"
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",
     "@fontsource/barlow-condensed": "^5.3.0",
     "@fontsource/bebas-neue": "^5.3.0",
+    "fflate": "^0.8.3",
     "firebase": "^12.10.0",
     "firebase-admin": "^13.7.0",
     "react": "^19.2.0",

@@ -8,6 +8,7 @@ import LastRoundResults from "../components/fixture/LastRoundResults";
 import NextRound from "../components/fixture/NextRound";
 import StandingsMini from "../components/standings/StandingsMini";
 import PlayoffMini from "../components/playoffs/PlayoffMini";
+import StatsMini from "../components/stats/StatsMini";
 import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
 import { usePlayoffs } from "../hooks/usePlayoffs";
@@ -231,6 +232,9 @@ export default function Home() {
                         <StandingsMini standings={standings} loading={standingsLoading} />
                     </div>
                 )}
+
+                {/* Se dibuja solo cuando hay planillas cargadas */}
+                {!fixtureLoading && <StatsMini />}
             </div>
         </Layout>
     );

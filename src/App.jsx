@@ -5,6 +5,9 @@ import Home from "./pages/Home";
 import Standings from "./pages/Standings";
 import Fixture from "./pages/Fixture";
 import Playoffs from "./pages/Playoffs";
+import Stats from "./pages/Stats";
+import PlayerDetail from "./pages/PlayerDetail";
+import BoxScore from "./pages/BoxScore";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 
@@ -22,6 +25,9 @@ export default function App() {
                 <Route path="/tabla" element={<Standings />} />
                 <Route path="/fixture" element={<Fixture />} />
                 <Route path="/playoffs" element={<Playoffs />} />
+                <Route path="/estadisticas" element={<Stats />} />
+                <Route path="/jugador/:playerId" element={<PlayerDetail />} />
+                <Route path="/partido/:matchId" element={<BoxScore />} />
                 <Route path="/login" element={<Login />} />
 
                 <Route
