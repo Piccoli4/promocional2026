@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import TeamLogo from "../components/ui/TeamLogo";
 import { SectionTitle, StatTile, Spinner, EmptyState, Chip } from "../components/ui/Primitives";
+import ShareButton from "../components/share/ShareButton";
 import { usePlayer } from "../hooks/useStats";
 import { segundosAReloj } from "../utils/statsCalculator";
 import { teamShortNames } from "../data/teamLogos";
@@ -88,10 +89,27 @@ export default function PlayerDetail() {
                     <StatTile label="Valoración p/p" value={jugador.prom.val.toFixed(1)} tone="gold" delay={120} />
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <Chip>{jugador.pj} {jugador.pj === 1 ? "partido" : "partidos"}</Chip>
                     <Chip tone="muted">{segundosAReloj(jugador.seg)} en cancha</Chip>
                     <Chip tone="muted">{jugador.pts} puntos totales</Chip>
+
+                    <ShareButton
+                        tipo="jugador"
+                        base={nombrePropio(jugador.nombre)}
+                        label="Compartir"
+                        className="ml-auto"
+                        datos={{
+                            nombre: nombrePropio(jugador.nombre),
+                            equipo: jugador.equipo,
+                            num: jugador.num,
+                            pj: jugador.pj,
+                            prom: jugador.prom,
+                            pctT2: jugador.pctT2,
+                            pctT3: jugador.pctT3,
+                            pctTL: jugador.pctTL,
+                        }}
+                    />
                 </div>
 
                 {/* Tiro */}

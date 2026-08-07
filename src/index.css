@@ -786,6 +786,42 @@ h4 {
     animation: float-y 5.5s ease-in-out infinite;
 }
 
+/* Flecha del modal de iOS: cabecea hacia el botón Compartir de Safari */
+.a-flecha {
+    animation: flecha-abajo 1.7s ease-in-out infinite;
+}
+
+@keyframes flecha-abajo {
+
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translateY(7px);
+        opacity: 1;
+    }
+}
+
+/* Hoja de compartir: sube desde abajo en móvil, aparece centrada en escritorio */
+.a-sheet {
+    animation: sheet-up 0.34s var(--ease-out) both;
+}
+
+@keyframes sheet-up {
+    from {
+        opacity: 0;
+        transform: translateY(22px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 .a-pulse {
     animation: pulse-ring 2.2s ease-out infinite;
 }

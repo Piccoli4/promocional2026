@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import { usePWAInstall } from "../../context/PWAInstallContext";
 import logo from "../../assets/UyP.png";
 
 /* ── Iconografía (SVG inline, hereda currentColor) ─────────────────── */
@@ -96,6 +97,41 @@ function ThemeToggle() {
     );
 }
 
+/* ── Botón manual de instalación ──────────────────────────────────── */
+
+/**
+ * Sigue disponible aunque el usuario haya descartado el modal automático:
+ * es la única salida para quien lo cerró sin querer.
+ */
+function InstallButton() {
+    const { puedeOfrecerse, abrirModal } = usePWAInstall();
+
+    if (!puedeOfrecerse) return null;
+
+    return (
+        <button
+            onClick={abrirModal}
+            className="nm-btn flex shrink-0 items-center gap-2 px-3 py-2 text-xs sm:px-4"
+            title="Instalar la app"
+        >
+            <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+            >
+                <path d="M12 3v12m0 0-4-4m4 4 4-4" />
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+            </svg>
+            <span className="hidden sm:inline">Instalar app</span>
+        </button>
+    );
+}
+
 /* ── Barra superior ───────────────────────────────────────────────── */
 
 export function TopBar() {
@@ -159,6 +195,7 @@ export function TopBar() {
                 </nav>
 
                 <div className="ml-auto flex items-center gap-2 md:ml-2">
+                    <InstallButton />
                     <ThemeToggle />
                     {isAdmin && (
                         <button

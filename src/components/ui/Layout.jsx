@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import CourtBackdrop from "./CourtBackdrop";
 import { TopBar, BottomNav } from "./Navbar";
+import InstallPWAModal from "../pwa/InstallPWAModal";
 
 export default function Layout({ children }) {
     const { pathname } = useLocation();
@@ -34,6 +35,9 @@ export default function Layout({ children }) {
             </div>
 
             <BottomNav />
+
+            {/* Acá y no en App para que no aparezca en el login */}
+            <InstallPWAModal />
         </div>
     );
 }

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import TeamLogo from "../components/ui/TeamLogo";
 import { Spinner, EmptyState, Chip } from "../components/ui/Primitives";
+import ShareButton from "../components/share/ShareButton";
 import { obtenerEstadisticasPartido } from "../services/statsService";
 import { conDerivados, segundosAReloj, totalesVacios, CAMPOS_SUMABLES } from "../utils/statsCalculator";
 import { teamShortNames } from "../data/teamLogos";
@@ -220,6 +221,21 @@ export default function BoxScore() {
                         </span>
                     </div>
                 </div>
+
+                <ShareButton
+                    tipo="partido"
+                    base={`${teamShortNames[local.key] ?? local.key} vs ${teamShortNames[visitante.key] ?? visitante.key}`}
+                    label="Compartir resultado"
+                    className="self-start"
+                    datos={{
+                        local: local.key,
+                        visitante: visitante.key,
+                        ptsLocal: partido.ptsLocal,
+                        ptsVisitante: partido.ptsVisitante,
+                        etiqueta:
+                            partido.fase === "regular" ? `${partido.fecha}ª Fecha` : "Fase Final",
+                    }}
+                />
 
                 <TablaEquipo equipo={local} />
                 <TablaEquipo equipo={visitante} />
