@@ -416,56 +416,78 @@ h4 {
     transform: translateZ(46px);
 }
 
-/* ── Pelota de básquet 3D (esfera + meridianos, sin librerías) ───── */
+/* ── Pelota de básquet (foto real + animación de pique) ──────────── */
 
-.ball {
+.bb {
     position: relative;
-    transform-style: preserve-3d;
-    animation: ball-spin 15s linear infinite;
+    width: var(--bb);
+    height: var(--bb);
 }
 
-.ball-core {
+/* Sombra de contacto contra el piso */
+.bb-shadow {
+    position: absolute;
+    left: 13%;
+    right: 13%;
+    bottom: calc(var(--bb) * -0.07);
+    height: calc(var(--bb) * 0.11);
+    border-radius: 50%;
+    opacity: 0.42;
+    background: radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0.62) 0%,
+            rgba(0, 0, 0, 0.3) 46%,
+            transparent 72%);
+    filter: blur(calc(var(--bb) / 40));
+}
+
+.bb-drop,
+.bb-squash {
     position: absolute;
     inset: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 32% 26%,
-            #ffc48a 0%,
-            var(--ball-1) 34%,
-            var(--ball-2) 78%,
-            #6d2708 100%);
-    box-shadow:
-        inset -10px -14px 26px rgba(0, 0, 0, 0.45),
-        inset 8px 8px 18px rgba(255, 220, 180, 0.28),
-        0 22px 40px -14px rgba(0, 0, 0, 0.55);
 }
 
-.ball-meridian {
+/* El aplastado es contra el piso: va por fuera del giro */
+.bb-squash {
+    transform-origin: 50% 94%;
+}
+
+.bb-img {
     position: absolute;
     inset: 0;
-    border-radius: 50%;
-    border: 1.5px solid rgba(46, 14, 0, 0.5);
-    transform-style: preserve-3d;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 calc(var(--bb) * 0.02) calc(var(--bb) * 0.03) rgba(0, 0, 0, 0.35));
 }
 
-/* Costura horizontal (paralelo) */
-.ball-parallel {
-    position: absolute;
-    left: 3%;
-    right: 3%;
-    top: 28%;
-    height: 44%;
-    border-radius: 50%;
-    border: 2px solid rgba(40, 11, 0, 0.55);
-    border-left-color: transparent;
-    border-right-color: transparent;
+/* Entrada al abrir la app */
+.bb-intro .bb-drop {
+    animation: bb-in 1.55s both;
 }
 
-.ball-shine {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.5) 0%, transparent 34%);
-    pointer-events: none;
+.bb-intro .bb-squash {
+    animation: bb-squash 1.55s both;
+}
+
+.bb-intro .bb-img {
+    animation: bb-backspin 1.55s cubic-bezier(0.14, 0.7, 0.2, 1) both;
+}
+
+.bb-intro .bb-shadow {
+    animation: bb-shadow-in 1.55s both;
+}
+
+/* Reposo */
+.bb-idle .bb-drop {
+    animation: bb-float 5.5s ease-in-out infinite;
+}
+
+.bb-idle .bb-img {
+    animation: bb-rock 5.5s ease-in-out infinite;
+}
+
+.bb-idle .bb-shadow {
+    animation: bb-shadow-idle 5.5s ease-in-out infinite;
 }
 
 /* ── Aro ─────────────────────────────────────────────────────────── */
@@ -491,13 +513,173 @@ h4 {
     }
 }
 
-@keyframes ball-spin {
+/* ── Pelota: giro, pique de entrada y sombra ─────────────────────── */
+
+/* Backspin: gira en el plano de la pantalla, como una pelota que pica de
+   verdad, y frena justo en la orientación original de la foto. */
+@keyframes bb-backspin {
     from {
-        transform: rotateX(-14deg) rotateY(0deg);
+        transform: rotate(-430deg);
     }
 
     to {
-        transform: rotateX(-14deg) rotateY(360deg);
+        transform: rotate(0deg);
+    }
+}
+
+/* En reposo apenas se balancea: no gira, para que no parezca un logo */
+@keyframes bb-rock {
+
+    0%,
+    100% {
+        transform: rotate(-2.5deg);
+    }
+
+    50% {
+        transform: rotate(2.5deg);
+    }
+}
+
+/* Cae desde arriba, pica dos veces y se acomoda */
+@keyframes bb-in {
+    0% {
+        opacity: 0;
+        transform: translateY(-48%) scale(0.28);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.85, 0.6);
+    }
+
+    18% {
+        opacity: 1;
+    }
+
+    40% {
+        transform: translateY(0) scale(1);
+        animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+    }
+
+    58% {
+        transform: translateY(-22%) scale(1);
+        animation-timing-function: cubic-bezier(0.6, 0.05, 0.9, 0.55);
+    }
+
+    74% {
+        transform: translateY(0) scale(1);
+        animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+    }
+
+    86% {
+        transform: translateY(-8%) scale(1);
+        animation-timing-function: cubic-bezier(0.6, 0.05, 0.9, 0.55);
+    }
+
+    96%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Aplastado en cada impacto (squash & stretch) */
+@keyframes bb-squash {
+
+    0%,
+    36% {
+        transform: scale(1, 1);
+    }
+
+    42% {
+        transform: scale(1.12, 0.88);
+    }
+
+    50% {
+        transform: scale(0.97, 1.04);
+    }
+
+    56%,
+    71% {
+        transform: scale(1, 1);
+    }
+
+    76% {
+        transform: scale(1.07, 0.94);
+    }
+
+    82% {
+        transform: scale(0.985, 1.02);
+    }
+
+    88%,
+    94% {
+        transform: scale(1, 1);
+    }
+
+    97% {
+        transform: scale(1.035, 0.97);
+    }
+
+    100% {
+        transform: scale(1, 1);
+    }
+}
+
+@keyframes bb-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-7%);
+    }
+}
+
+@keyframes bb-shadow-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.3, 0.4);
+    }
+
+    30% {
+        opacity: 0.14;
+    }
+
+    42% {
+        opacity: 0.6;
+        transform: scale(1.12, 1);
+    }
+
+    58% {
+        opacity: 0.22;
+        transform: scale(0.62, 0.6);
+    }
+
+    76% {
+        opacity: 0.5;
+        transform: scale(1.02, 1);
+    }
+
+    86% {
+        opacity: 0.3;
+        transform: scale(0.8, 0.8);
+    }
+
+    100% {
+        opacity: 0.42;
+        transform: scale(1, 1);
+    }
+}
+
+@keyframes bb-shadow-idle {
+
+    0%,
+    100% {
+        opacity: 0.42;
+        transform: scale(1, 1);
+    }
+
+    50% {
+        opacity: 0.26;
+        transform: scale(0.84, 0.86);
     }
 }
 
