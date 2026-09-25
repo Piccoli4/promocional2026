@@ -12,7 +12,7 @@ Sistema web para seguir el torneo en tiempo real: fixture, tabla de posiciones y
 
 | Etapa | Formato | Fechas |
 |---|---|---|
-| Fase Regular | Zona única, 12 equipos, todos contra todos ida, 11 fechas | 02/08 al 11/10 |
+| Fase Regular | Zona única, 12 equipos, todos contra todos ida, 11 fechas | 02/08 al 18/10 |
 | Play In | 5°v12° · 6°v11° · 7°v10° · 8°v9° — al mejor de 3 (1-1-1) | 18/10 · 25/10 · 27/10 |
 | Cuartos de Final | 1°v8° · 2°v7° · 3°v6° · 4°v5° — al mejor de 3 | 01/11 · 08/11 · 10/11 |
 | Semifinales | Reordenamiento: 1°v4° · 2°v3° — al mejor de 3 | 15/11 · 22/11 · 24/11 |

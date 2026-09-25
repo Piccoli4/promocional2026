@@ -13,7 +13,7 @@ import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
 import { usePlayoffs } from "../hooks/usePlayoffs";
 import { requestNotificationPermission } from "../services/messaging";
-import { formatDateLong } from "../data/fixture";
+import { formatDateLong, regularSeasonRange } from "../data/fixture";
 import { teamShortNames } from "../data/teamLogos";
 
 /** Días que faltan para una fecha ISO (negativo si ya pasó). */
@@ -153,7 +153,7 @@ export default function Home() {
                             <p className="max-w-md text-sm" style={{ color: "var(--text-2)" }}>
                                 {regularOver
                                     ? "Fase regular terminada. Arranca la definición: Play In, Cuartos, Semis y Final."
-                                    : "Zona única de 12 equipos · 11 fechas · del 2 de agosto al 11 de octubre."}
+                                    : `Zona única de 12 equipos · 11 fechas · ${regularSeasonRange(fixtureWithResults)}.`}
                             </p>
 
                             <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">

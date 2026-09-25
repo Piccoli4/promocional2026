@@ -62,6 +62,7 @@ export default function ScoreEditor({
     disabledHint,
     allowWalkover = true,
     delay = 0,
+    footer = null,
 }) {
     const [homeScore, setHomeScore] = useState("");
     const [awayScore, setAwayScore] = useState("");
@@ -228,6 +229,8 @@ export default function ScoreEditor({
                             : "✗ Error, intentá de nuevo"}
                 </p>
             )}
+
+            {footer}
         </div>
     );
 }

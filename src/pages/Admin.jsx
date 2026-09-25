@@ -3,6 +3,8 @@ import Layout from "../components/ui/Layout";
 import MatchResultForm from "../components/admin/MatchResultForm";
 import PlayoffAdminPanel from "../components/admin/PlayoffAdminPanel";
 import StatsUploadPanel from "../components/admin/StatsUploadPanel";
+import DateEditor from "../components/admin/DateEditor";
+import { saveRoundDate, deleteRoundDate } from "../services/roundDatesService";
 import { SectionTitle, ProgressBar, Spinner } from "../components/ui/Primitives";
 import { useFixture } from "../hooks/useFixture";
 import { useAuth } from "../context/AuthContext";
@@ -114,12 +116,27 @@ export default function Admin() {
                                     </span>
                                 </div>
 
+                                {current && (
+                                    <DateEditor
+                                        label="Día de la fecha"
+                                        date={current.date}
+                                        defaultDate={current.defaultDate}
+                                        // Guardar el día del calendario equivale a quitar la reprogramación
+                                        onSave={(iso) =>
+                                            iso === current.defaultDate
+                                                ? deleteRoundDate(current.round)
+                                                : saveRoundDate(current.round, iso)
+                                        }
+                                        onReset={() => deleteRoundDate(current.round)}
+                                    />
+                                )}
+
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {current?.matches.map((match, i) => (
                                         <MatchResultForm
                                             key={match.id}
                                             match={match}
-                                            date={current.date}
+                                            roundDate={current.date}
                                             delay={i * 45}
                                         />
                                     ))}

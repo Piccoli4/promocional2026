@@ -6,7 +6,9 @@ import TeamFilter from "../components/fixture/TeamFilter";
 import TeamLogo from "../components/ui/TeamLogo";
 import { SectionTitle, StatTile, Spinner, Chip } from "../components/ui/Primitives";
 import { useFixture } from "../hooks/useFixture";
-import { TEAMS, formatDateLong } from "../data/fixture";
+import { TEAMS, formatDateLong, regularSeasonRange } from "../data/fixture";
+
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function Fixture() {
     const { fixtureWithResults, loading } = useFixture();
@@ -54,7 +56,7 @@ export default function Fixture() {
         <Layout>
             <div className="flex flex-col gap-6">
                 <SectionTitle
-                    eyebrow="Del 2 de agosto al 11 de octubre"
+                    eyebrow={capitalize(regularSeasonRange(fixtureWithResults))}
                     title="Fixture"
                     right={
                         team ? (

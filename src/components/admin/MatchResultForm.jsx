@@ -1,5 +1,7 @@
 import ScoreEditor from "./ScoreEditor";
+import DateEditor from "./DateEditor";
 import { saveResult, deleteResult } from "../../services/resultsService";
+import { saveMatchDate, deleteMatchDate } from "../../services/roundDatesService";
 import { teamTinyNames } from "../../data/teamLogos";
 import { formatDateLong } from "../../data/fixture";
 
@@ -19,7 +21,7 @@ async function notify(title, body) {
     }
 }
 
-export default function MatchResultForm({ match, date, delay = 0 }) {
+export default function MatchResultForm({ match, roundDate, delay = 0 }) {
     const short = (t) => teamTinyNames[t] ?? t;
 
     const handleSave = async (homeScore, awayScore, walkover) => {
@@ -35,11 +37,22 @@ export default function MatchResultForm({ match, date, delay = 0 }) {
             home={match.home}
             away={match.away}
             title={`${short(match.home)} vs ${short(match.away)}`}
-            subtitle={date ? formatDateLong(date) : undefined}
+            subtitle={match.date ? formatDateLong(match.date) : undefined}
             result={match.result}
             onSave={handleSave}
             onDelete={() => deleteResult(match.id)}
             delay={delay}
+            footer={
+                <DateEditor
+                    compact
+                    label="Día del partido"
+                    date={match.date}
+                    defaultDate={roundDate}
+                    // Guardar el día de la fecha equivale a quitar la reprogramación
+                    onSave={(iso) => (iso === roundDate ? deleteMatchDate(match.id) : saveMatchDate(match.id, iso))}
+                    onReset={() => deleteMatchDate(match.id)}
+                />
+            }
         />
     );
 }

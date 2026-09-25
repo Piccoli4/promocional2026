@@ -72,6 +72,9 @@ export default function MatchCard({ match, highlightTeam = null, date, delay = 0
     const awayWon = played && awayScore > homeScore;
     const walkover = played && result.walkover;
     const conPlanilla = useMatchesWithStats().has(match.id);
+    // Un partido movido de su fecha muestra su día propio, aunque no se pida la fecha
+    const reprogramado = !date && match.rescheduled;
+    const shownDate = date || (reprogramado ? match.date : null);
 
     return (
         <article
@@ -107,13 +110,14 @@ export default function MatchCard({ match, highlightTeam = null, date, delay = 0
                 highlighted={highlightTeam === match.away}
             />
 
-            {(date || walkover || conPlanilla) && (
+            {(shownDate || walkover || conPlanilla) && (
                 <div className="flex items-center justify-between gap-2 px-2 pt-1.5">
                     <span
                         className="cond text-[0.65rem] font-semibold uppercase tracking-[0.14em]"
-                        style={{ color: "var(--text-3)" }}
+                        style={{ color: reprogramado ? "var(--red)" : "var(--text-3)" }}
                     >
-                        {date ? formatDateLong(date) : ""}
+                        {reprogramado && "Reprogramado · "}
+                        {shownDate ? formatDateLong(shownDate) : ""}
                     </span>
 
                     <span className="flex items-center gap-3">

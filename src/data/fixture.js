@@ -3,7 +3,7 @@
  *
  * Fase Regular: zona única, 12 equipos, todos contra todos ida, 11 fechas.
  * Son las vueltas del Torneo Apertura (localía invertida).
- * Del 02/08 al 11/10.
+ * Del 02/08 al 18/10 (desde la 6ª fecha el calendario se corrió una semana).
  */
 
 export const TEAMS = [
@@ -21,19 +21,24 @@ export const TEAMS = [
     "CENTRAL RINCÓN",
 ];
 
-/** Fechas de la fase regular (ANEXO II del reglamento). */
+/**
+ * Fechas de la fase regular (ANEXO II del reglamento).
+ * Desde la 6ª fecha se corrieron una semana respecto del reglamento.
+ * Son los valores por defecto: el admin puede reprogramar cualquier fecha
+ * y ese cambio (guardado en Firestore, colección "roundDates") tiene prioridad.
+ */
 export const ROUND_DATES = {
     1: "2026-08-02",
     2: "2026-08-09",
     3: "2026-08-16",
     4: "2026-08-23",
     5: "2026-08-30",
-    6: "2026-09-06",
-    7: "2026-09-13",
-    8: "2026-09-20",
-    9: "2026-09-27",
-    10: "2026-10-04",
-    11: "2026-10-11",
+    6: "2026-09-13",
+    7: "2026-09-20",
+    8: "2026-09-27",
+    9: "2026-10-04",
+    10: "2026-10-11",
+    11: "2026-10-18",
 };
 
 const RAW_ROUNDS = [
@@ -159,4 +164,18 @@ export function formatDateLong(iso) {
 
 export function getRoundDate(roundNumber) {
     return formatDate(ROUND_DATES[roundNumber]);
+}
+
+/** Formatea "2026-08-02" → "2 de agosto". */
+export function formatDayMonth(iso) {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("es-AR", { day: "numeric", month: "long" });
+}
+
+/** Rango de la fase regular a partir de las fechas vigentes: "del 2 de agosto al 18 de octubre". */
+export function regularSeasonRange(rounds) {
+    const dates = rounds.map((r) => r.date).filter(Boolean).sort();
+    if (!dates.length) return "";
+    return `del ${formatDayMonth(dates[0])} al ${formatDayMonth(dates[dates.length - 1])}`;
 }
