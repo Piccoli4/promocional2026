@@ -33,10 +33,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
+            urlPattern: /\.(?:png|jpg|jpeg|webp|svg|gif)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',

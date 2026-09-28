@@ -17,10 +17,23 @@ export default async function handler(req) {
     return new Response('Método no permitido', { status: 405 });
   }
 
-  // Verificar clave secreta para que solo tu app pueda llamar esta función
-  const authHeader = req.headers.get('x-internal-key');
-  if (authHeader !== process.env.INTERNAL_FUNCTION_KEY) {
+  // Solo un admin logueado puede notificar: validamos su token de Firebase Auth.
+  // Si ADMIN_UIDS está definida (UIDs separados por coma), además tiene que estar en la lista.
+  const idToken = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!idToken) {
     return new Response('No autorizado', { status: 401 });
+  }
+
+  let uid;
+  try {
+    ({ uid } = await admin.auth().verifyIdToken(idToken));
+  } catch {
+    return new Response('No autorizado', { status: 401 });
+  }
+
+  const allowed = (process.env.ADMIN_UIDS || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (allowed.length && !allowed.includes(uid)) {
+    return new Response('Prohibido', { status: 403 });
   }
 
   const { title, body } = await req.json();

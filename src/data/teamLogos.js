@@ -1,14 +1,14 @@
-import alianza from "../assets/Alianza.png";
-import alumni from "../assets/Alumni.png";
-import atleticoFranck from "../assets/AtleticoFranck.png";
-import colonSF from "../assets/ColonSF.png";
-import colonSJ from "../assets/ColonSJ.png";
-import kimberley from "../assets/Kimberley.png";
-import regatas from "../assets/RegatasSF.png";
-import rincon from "../assets/Rincon.png";
-import santaRosa from "../assets/SantaRosa.png";
-import uypa from "../assets/UyPA.png";
-import uypb from "../assets/UyPB.png";
+import alianza from "../assets/Alianza.webp";
+import alumni from "../assets/Alumni.webp";
+import atleticoFranck from "../assets/AtleticoFranck.webp";
+import colonSF from "../assets/ColonSF.webp";
+import colonSJ from "../assets/ColonSJ.webp";
+import kimberley from "../assets/Kimberley.webp";
+import regatas from "../assets/RegatasSF.webp";
+import rincon from "../assets/Rincon.webp";
+import santaRosa from "../assets/SantaRosa.webp";
+import uypa from "../assets/UyPA.webp";
+import uypb from "../assets/UyPB.webp";
 
 export const teamLogos = {
     "COLÓN SF": colonSF,
