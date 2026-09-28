@@ -4,7 +4,6 @@
 // Uso: node scripts/optimize-logos.js Alianza.png Kimberley.png ...
 import sharp from 'sharp';
 import { statSync } from 'fs';
-import process from 'process';
 
 const files = process.argv.slice(2);
 if (files.length === 0) {

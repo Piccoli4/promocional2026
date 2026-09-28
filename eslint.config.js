@@ -24,6 +24,21 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Cada contexto exporta su Provider junto con su hook de acceso.
+      'react-refresh/only-export-components': [
+        'error',
+        { allowConstantExport: true, allowExportNames: ['useAuth', 'useTheme', 'usePWAInstall'] },
+      ],
     },
+  },
+  {
+    // Función de Netlify y scripts de mantenimiento: corren en Node.
+    files: ['netlify/**/*.js', 'scripts/**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
+  {
+    // Service worker de FCM: `firebase` lo cargan los importScripts.
+    files: ['public/firebase-messaging-sw.js'],
+    languageOptions: { globals: { ...globals.serviceworker, firebase: 'readonly' } },
   },
 ])

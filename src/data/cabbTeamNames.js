@@ -22,7 +22,7 @@ export function normalizeTeamName(raw) {
         .toUpperCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[\u2018\u2019\u0060\u00b4\"]/g, "")
+        .replace(/[\u2018\u2019\u0060\u00b4"]/g, "")
         .replace(/[^A-Z0-9() ]+/g, " ")
         .replace(/\s+/g, " ")
         .trim();

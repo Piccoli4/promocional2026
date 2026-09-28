@@ -152,19 +152,22 @@ function TablaEquipo({ equipo }) {
 
 export default function BoxScore() {
     const { matchId } = useParams();
-    const [partido, setPartido] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // Se guarda de qué partido es la planilla: si no coincide con la URL,
+    // todavía se está cargando (por ejemplo, al pasar de un partido a otro).
+    const [cargado, setCargado] = useState({ id: null, partido: null });
 
     useEffect(() => {
         let vigente = true;
-        setLoading(true);
         obtenerEstadisticasPartido(matchId)
-            .then((data) => vigente && setPartido(data))
-            .finally(() => vigente && setLoading(false));
+            .catch(() => null)
+            .then((data) => vigente && setCargado({ id: matchId, partido: data }));
         return () => {
             vigente = false;
         };
     }, [matchId]);
+
+    const loading = cargado.id !== matchId;
+    const partido = loading ? null : cargado.partido;
 
     if (loading) {
         return (

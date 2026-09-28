@@ -27,6 +27,13 @@ const PORCENTAJES = [
     { key: "pctTL", label: "TL%", titulo: "Porcentaje de libres", pct: true },
 ];
 
+/** Valor de la columna para el equipo: total o por partido según el modo. */
+function valor(equipo, columna, modo) {
+    if (columna.pct) return equipo[columna.key];
+    const bruto = columna.calculada ? equipo.pts - equipo.ptsContra : equipo[columna.key] ?? 0;
+    return modo === "prom" ? porPartido(bruto, equipo.pj) : bruto;
+}
+
 export default function TeamsTable({ equipos, modo }) {
     const isMobile = useIsMobile();
     const [orden, setOrden] = useState({ key: "pts", desc: true });
@@ -36,17 +43,11 @@ export default function TeamsTable({ equipos, modo }) {
         [isMobile]
     );
 
-    const valor = (equipo, columna) => {
-        if (columna.pct) return equipo[columna.key];
-        const bruto = columna.calculada ? equipo.pts - equipo.ptsContra : equipo[columna.key] ?? 0;
-        return modo === "prom" ? porPartido(bruto, equipo.pj) : bruto;
-    };
-
     const ordenados = useMemo(() => {
         const columna = [...COLUMNAS, ...PORCENTAJES].find((c) => c.key === orden.key);
         return [...equipos].sort((a, b) => {
-            const va = valor(a, columna) ?? -1;
-            const vb = valor(b, columna) ?? -1;
+            const va = valor(a, columna, modo) ?? -1;
+            const vb = valor(b, columna, modo) ?? -1;
             return orden.desc ? vb - va : va - vb;
         });
     }, [equipos, orden, modo]);
@@ -54,7 +55,7 @@ export default function TeamsTable({ equipos, modo }) {
     if (equipos.length === 0) return null;
 
     const mostrar = (equipo, columna) => {
-        const v = valor(equipo, columna);
+        const v = valor(equipo, columna, modo);
         if (v === null || v === undefined) return "—";
         if (columna.pct) return `${v}%`;
         if (columna.calculada && v > 0) return `+${v}`;
@@ -126,7 +127,7 @@ export default function TeamsTable({ equipos, modo }) {
                                         className="tabular px-2 py-2 text-center"
                                         style={{
                                             color: columna.calculada
-                                                ? valor(equipo, columna) >= 0
+                                                ? valor(equipo, columna, modo) >= 0
                                                     ? "var(--ok)"
                                                     : "var(--danger)"
                                                 : "var(--text-2)",

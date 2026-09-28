@@ -29,6 +29,13 @@ const PORCENTAJES = [
     { key: "pctTL", label: "TL%", titulo: "Porcentaje de libres" },
 ];
 
+/** Valor de la columna para el jugador: total o por partido según el modo. */
+function valor(jugador, columna, modo) {
+    const bruto = jugador[columna.key] ?? 0;
+    if (columna.key === "pj" || columna.key.startsWith("pct")) return bruto;
+    return modo === "prom" && jugador.pj ? bruto / jugador.pj : bruto;
+}
+
 export default function PlayersTable({ jugadores, modo }) {
     const isMobile = useIsMobile();
     const [orden, setOrden] = useState({ key: "pts", desc: true });
@@ -38,23 +45,17 @@ export default function PlayersTable({ jugadores, modo }) {
         [isMobile]
     );
 
-    const valor = (jugador, columna) => {
-        const bruto = jugador[columna.key] ?? 0;
-        if (columna.key === "pj" || columna.key.startsWith("pct")) return bruto;
-        return modo === "prom" && jugador.pj ? bruto / jugador.pj : bruto;
-    };
-
     const ordenados = useMemo(() => {
         const columna = [...COLUMNAS, ...PORCENTAJES].find((c) => c.key === orden.key);
         return [...jugadores].sort((a, b) => {
-            const va = valor(a, columna) ?? -1;
-            const vb = valor(b, columna) ?? -1;
+            const va = valor(a, columna, modo) ?? -1;
+            const vb = valor(b, columna, modo) ?? -1;
             return orden.desc ? vb - va : va - vb;
         });
     }, [jugadores, orden, modo]);
 
     const mostrar = (jugador, columna) => {
-        const v = valor(jugador, columna);
+        const v = valor(jugador, columna, modo);
         if (v === null || v === undefined) return "—";
         if (columna.reloj) return segundosAReloj(v);
         if (columna.key.startsWith("pct")) return `${v}%`;
