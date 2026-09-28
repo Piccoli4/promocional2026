@@ -4,6 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        // Las librerías van aparte: no cambian entre deploys, así que el
+        // service worker las conserva y cada actualización baja solo la app.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('firebase')) return 'firebase';
+          if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return 'react';
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

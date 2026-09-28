@@ -12,6 +12,20 @@ import App from "./App";
 // React monte, y si no lo agarramos acá el evento se pierde.
 iniciarCaptura();
 
+// Las páginas se bajan por separado: si hubo un deploy con la app abierta,
+// el chunk que pide puede ya no existir. Recargamos para tomar la versión
+// nueva, una sola vez por sesión para no entrar en un bucle.
+window.addEventListener("vite:preloadError", (event) => {
+  try {
+    if (sessionStorage.getItem("chunk-reload")) return;
+    sessionStorage.setItem("chunk-reload", "1");
+  } catch {
+    return;
+  }
+  event.preventDefault();
+  window.location.reload();
+});
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider>
