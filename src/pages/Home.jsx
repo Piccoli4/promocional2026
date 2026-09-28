@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import Basketball3D from "../components/ui/Basketball3D";
@@ -12,7 +12,7 @@ import StatsMini from "../components/stats/StatsMini";
 import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
 import { usePlayoffs } from "../hooks/usePlayoffs";
-import { requestNotificationPermission } from "../services/messaging";
+import { requestNotificationPermission, refreshNotificationToken } from "../services/messaging";
 import { formatDateLong, regularSeasonRange } from "../data/fixture";
 import { teamShortNames } from "../data/teamLogos";
 
@@ -59,6 +59,11 @@ function initialNotificationStatus() {
 
 function NotificationButton() {
     const [status, setStatus] = useState(initialNotificationStatus);
+
+    // Si ya tenía las alertas activas, re-guardamos el token por si rotó.
+    useEffect(() => {
+        refreshNotificationToken();
+    }, []);
 
     if (status === "unsupported") return null;
 

@@ -12,6 +12,12 @@ if (!admin.apps.length) {
 
 const db = getFirestore();
 
+// Errores de FCM que significan que el token ya no sirve y no va a volver a servir.
+const DEAD_TOKEN_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+]);
+
 export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response('Método no permitido', { status: 405 });
@@ -40,22 +46,25 @@ export default async function handler(req) {
 
   // Leer todos los tokens guardados
   const snapshot = await db.collection('fcm_tokens').get();
-  const tokens = snapshot.docs.map((d) => d.data().token);
+  const subs = snapshot.docs
+    .map((d) => ({ ref: d.ref, token: d.data().token }))
+    .filter((s) => s.token);
 
-  if (tokens.length === 0) {
-    return new Response(JSON.stringify({ sent: 0 }), { status: 200 });
+  if (subs.length === 0) {
+    return new Response(JSON.stringify({ sent: 0, removed: 0 }), { status: 200 });
   }
 
   // Enviar a todos en lotes de 500 (límite de FCM)
   const chunks = [];
-  for (let i = 0; i < tokens.length; i += 500) {
-    chunks.push(tokens.slice(i, i + 500));
+  for (let i = 0; i < subs.length; i += 500) {
+    chunks.push(subs.slice(i, i + 500));
   }
 
   let totalSent = 0;
+  let totalRemoved = 0;
   for (const chunk of chunks) {
     const response = await admin.messaging().sendEachForMulticast({
-      tokens: chunk,
+      tokens: chunk.map((s) => s.token),
       notification: { title, body },
       webpush: {
         notification: {
@@ -65,9 +74,24 @@ export default async function handler(req) {
       },
     });
     totalSent += response.successCount;
+
+    // Borrar los tokens que FCM da por muertos (app desinstalada, permiso
+    // revocado, token rotado). Otros errores pueden ser pasajeros: se conservan.
+    const batch = db.batch();
+    let stale = 0;
+    response.responses.forEach((r, i) => {
+      if (!r.success && DEAD_TOKEN_CODES.has(r.error?.code)) {
+        batch.delete(chunk[i].ref);
+        stale++;
+      }
+    });
+    if (stale > 0) {
+      await batch.commit();
+      totalRemoved += stale;
+    }
   }
 
-  return new Response(JSON.stringify({ sent: totalSent }), { status: 200 });
+  return new Response(JSON.stringify({ sent: totalSent, removed: totalRemoved }), { status: 200 });
 }
 
 export const config = { path: '/api/send-notification' };
