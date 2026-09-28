@@ -30,13 +30,13 @@ const emptyEntry = (team, sanctions) => ({
     walkovers: 0,
 });
 
-const hasScores = (r) =>
+export const hasScores = (r) =>
     !!r &&
     r.homeScore !== null && r.homeScore !== undefined &&
     r.awayScore !== null && r.awayScore !== undefined;
 
 /** Aplana el fixture a la lista de partidos efectivamente jugados. */
-function playedMatches(results, fixture) {
+export function playedMatches(results, fixture) {
     const list = [];
     fixture.forEach((round) => {
         round.matches.forEach((match) => {

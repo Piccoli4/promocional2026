@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check": "npm run lint && node scripts/dev/validate.mjs && node scripts/dev/test-standings.mjs && node scripts/dev/simulate-playoffs.mjs && node scripts/dev/test-stats.mjs"
+    "check": "npm run lint && node scripts/dev/validate.mjs && node scripts/dev/test-standings.mjs && node scripts/dev/simulate-playoffs.mjs && node scripts/dev/test-stats.mjs && node scripts/dev/test-qualification.mjs"
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",

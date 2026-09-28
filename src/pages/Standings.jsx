@@ -1,5 +1,6 @@
 import Layout from "../components/ui/Layout";
 import StandingsTable from "../components/standings/StandingsTable";
+import QualificationPanel from "../components/standings/QualificationPanel";
 import { SectionTitle, StatTile } from "../components/ui/Primitives";
 import { useStandings } from "../hooks/useStandings";
 
@@ -41,6 +42,8 @@ export default function Standings() {
                 </div>
 
                 <StandingsTable standings={standings} loading={loading} />
+
+                {!loading && <QualificationPanel standings={standings} />}
 
                 {/* Criterios de desempate */}
                 <div className="nm nm-edge a-rise flex flex-col gap-3 p-5" style={{ "--d": "200ms" }}>
