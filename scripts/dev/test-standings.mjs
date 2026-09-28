@@ -140,6 +140,32 @@ const entry = (table, team) => table.find((e) => e.team === team);
         ["ATL. FRANCK A", "COLÓN SF", "ATL. FRANCK B"]);
 }
 
+/* ── 5b. La reducida separa a una parte: los que siguen empatados reinician ── */
+{
+    // Caso real de la 8ª fecha (Clausura 2026). Cuatro empatados en la general;
+    // en la reducida COLÓN SF y FRANCK A quedan con 3 pts. COLÓN SF tiene mejor
+    // diferencia entre los cuatro (−4 contra −7), pero FRANCK A le ganó el
+    // partido entre ellos: se reinicia la cadena solo con esos dos y manda ese.
+    const R = {};
+    win(R, "U. Y PROGRESO A", "ATL. FRANCK A", 73, 49);
+    win(R, "COLÓN SF", "KIMBERLEY", 65, 52);
+    win(R, "ATL. FRANCK A", "COLÓN SF", 61, 44);
+    // Partidos contra el resto para dejar a los cuatro con 5 puntos.
+    win(R, "COLÓN SF", "ALUMNI", 70, 60);
+    win(R, "ATL. FRANCK A", "SANTA ROSA", 70, 60);
+    win(R, "U. Y PROGRESO A", "REGATAS SF", 70, 60);
+    win(R, "CENTRAL RINCÓN", "U. Y PROGRESO A", 70, 60);
+    win(R, "KIMBERLEY", "COLÓN SJ", 70, 60);
+    win(R, "KIMBERLEY", "ATL. FRANCK B", 70, 60);
+
+    const t = calculateStandings(R, FIXTURE);
+    const cuarteto = ["COLÓN SF", "ATL. FRANCK A", "U. Y PROGRESO A", "KIMBERLEY"];
+    check("Los cuatro con 5 puntos", cuarteto.map((x) => entry(t, x).points), [5, 5, 5, 5]);
+    check("Entre los dos que siguen empatados manda su partido",
+        cuarteto.slice().sort((a, b) => posOf(t, a) - posOf(t, b)),
+        ["ATL. FRANCK A", "COLÓN SF", "U. Y PROGRESO A", "KIMBERLEY"]);
+}
+
 /* ── 6. Fase regular completa: todos juegan 11 ─────────────────────── */
 {
     const R = {};

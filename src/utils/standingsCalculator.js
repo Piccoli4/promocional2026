@@ -102,10 +102,18 @@ function tabulate(teams, matches, sanctions = {}) {
 /** Compara dos entradas por diferencia general y luego puntos a favor. */
 const byOverall = (a, b) => b.pointsDiff - a.pointsDiff || b.pointsFor - a.pointsFor;
 
+/** Criterios de la tabla reducida, en el orden en que se aplican. */
+const MINI_CRITERIA = ["points", "pointsDiff", "pointsFor"];
+
 /**
  * Ordena un grupo de equipos empatados en puntos.
  * Aplica la tabla reducida de enfrentamientos directos y, si persiste el
  * empate, los criterios generales sobre todos los partidos de la fase.
+ *
+ * Como en FIBA, apenas un criterio separa a una parte del grupo, los que
+ * siguen empatados vuelven al paso 1 con una tabla reducida solo entre ellos.
+ * Ej.: si de cuatro empatados dos quedan iguales en puntos de la reducida,
+ * los desempata el partido entre esos dos, no la diferencia entre los cuatro.
  */
 function breakTie(group, allMatches) {
     if (group.length < 2) return group;
@@ -120,43 +128,23 @@ function breakTie(group, allMatches) {
 
     const mini = tabulate(names, between);
 
-    const sorted = [...group].sort((a, b) => {
-        const ma = mini[a.team];
-        const mb = mini[b.team];
-        return (
-            mb.points - ma.points ||
-            mb.pointsDiff - ma.pointsDiff ||
-            mb.pointsFor - ma.pointsFor
-        );
-    });
+    // Primer criterio de la reducida que distingue a alguien dentro del grupo.
+    const key = MINI_CRITERIA.find(
+        (k) => new Set(names.map((t) => mini[t][k])).size > 1
+    );
 
-    // Subgrupos que la tabla reducida no logró separar.
-    const stillTied = (a, b) => {
-        const ma = mini[a.team];
-        const mb = mini[b.team];
-        return (
-            ma.points === mb.points &&
-            ma.pointsDiff === mb.pointsDiff &&
-            ma.pointsFor === mb.pointsFor
-        );
-    };
+    // La tabla reducida no aportó nada: criterios generales.
+    if (!key) return [...group].sort(byOverall);
+
+    const sorted = [...group].sort((a, b) => mini[b.team][key] - mini[a.team][key]);
 
     const out = [];
     let i = 0;
     while (i < sorted.length) {
         let j = i + 1;
-        while (j < sorted.length && stillTied(sorted[i], sorted[j])) j++;
-        const sub = sorted.slice(i, j);
-
-        if (sub.length === 1) {
-            out.push(sub[0]);
-        } else if (sub.length === group.length) {
-            // La tabla reducida no aportó nada: criterios generales.
-            out.push(...[...sub].sort(byOverall));
-        } else {
-            // Subgrupo más chico: se vuelve a aplicar la cadena desde el inicio.
-            out.push(...breakTie(sub, allMatches));
-        }
+        while (j < sorted.length && mini[sorted[j].team][key] === mini[sorted[i].team][key]) j++;
+        // Subgrupo más chico: se vuelve a aplicar la cadena desde el inicio.
+        out.push(...breakTie(sorted.slice(i, j), allMatches));
         i = j;
     }
 
