@@ -3,6 +3,7 @@ import StandingsTable from "../components/standings/StandingsTable";
 import QualificationPanel from "../components/standings/QualificationPanel";
 import { SectionTitle, StatTile } from "../components/ui/Primitives";
 import { useStandings } from "../hooks/useStandings";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 const TIEBREAKERS = [
     "Enfrentamientos directos entre los equipos empatados (tabla reducida).",
@@ -11,6 +12,10 @@ const TIEBREAKERS = [
 ];
 
 export default function Standings() {
+    usePageMeta({
+        title: "Tabla de posiciones",
+        description: "Tabla de posiciones del Torneo Oficial Promocional 2026 de básquet de Santa Fe y qué necesita cada equipo para clasificar a Cuartos o al Play In.",
+    });
     const { standings, loading } = useStandings();
 
     const playedMatches = standings.reduce((a, e) => a + e.played, 0) / 2;

@@ -5,6 +5,7 @@ import { teamShortNames } from "../../data/teamLogos";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useQualification } from "../../hooks/useQualification";
 import { MAX_PENDING } from "../../utils/qualificationCalculator";
+import { trackEvent } from "../../services/analytics";
 
 const DIRECT_SPOTS = 4;
 const TOTAL_SPOTS = 12;
@@ -299,7 +300,12 @@ export default function QualificationPanel({ standings }) {
                                 info={analysis.teams[entry.team]}
                                 isMobile={isMobile}
                                 expanded={open === entry.team}
-                                onToggle={() => setOpen(open === entry.team ? null : entry.team)}
+                                onToggle={() => {
+                                    const abre = open !== entry.team;
+                                    // Solo al abrir: cuenta cuánta gente mira qué necesita un equipo.
+                                    if (abre) trackEvent("calculadora_ver_equipo", { equipo: entry.team });
+                                    setOpen(abre ? entry.team : null);
+                                }}
                                 delay={i * 30}
                             />
                         ))}

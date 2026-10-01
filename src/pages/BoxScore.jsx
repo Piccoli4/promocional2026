@@ -7,6 +7,7 @@ import ShareButton from "../components/share/ShareButton";
 import { obtenerEstadisticasPartido } from "../services/statsService";
 import { conDerivados, segundosAReloj, totalesVacios, CAMPOS_SUMABLES } from "../utils/statsCalculator";
 import { teamShortNames } from "../data/teamLogos";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 /**
  * Planilla completa de un partido.
@@ -168,6 +169,15 @@ export default function BoxScore() {
 
     const loading = cargado.id !== matchId;
     const partido = loading ? null : cargado.partido;
+    const cruce = partido
+        ? partido.equipos.map((e) => teamShortNames[e.key] ?? e.key).join(" vs ")
+        : null;
+    usePageMeta({
+        title: cruce ?? "Planilla del partido",
+        description: cruce
+            ? `Planilla de ${cruce}: resultado y estadísticas de cada jugador en el Torneo Oficial Promocional 2026 de básquet de Santa Fe.`
+            : undefined,
+    });
 
     if (loading) {
         return (

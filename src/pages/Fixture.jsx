@@ -6,11 +6,16 @@ import TeamFilter from "../components/fixture/TeamFilter";
 import TeamLogo from "../components/ui/TeamLogo";
 import { SectionTitle, StatTile, Spinner, Chip } from "../components/ui/Primitives";
 import { useFixture } from "../hooks/useFixture";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { TEAMS, formatDateLong, regularSeasonRange } from "../data/fixture";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function Fixture() {
+    usePageMeta({
+        title: "Fixture y resultados",
+        description: "Fixture completo y resultados de las 11 fechas de la fase regular del Torneo Oficial Promocional 2026 de básquet de Santa Fe.",
+    });
     const { fixtureWithResults, loading } = useFixture();
     const [openRound, setOpenRound] = useState(null);
     const [team, setTeam] = useState(null);

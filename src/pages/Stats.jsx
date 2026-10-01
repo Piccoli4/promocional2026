@@ -6,6 +6,7 @@ import PlayersTable from "../components/stats/PlayersTable";
 import TeamsTable from "../components/stats/TeamsTable";
 import { SectionTitle, Spinner, EmptyState, Chip } from "../components/ui/Primitives";
 import { useStats } from "../hooks/useStats";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { METRICAS, maxPartidos } from "../utils/statsCalculator";
 import { TEAMS } from "../data/fixture";
 
@@ -16,6 +17,10 @@ const VISTAS = [
 ];
 
 export default function Stats() {
+    usePageMeta({
+        title: "Estadísticas",
+        description: "Líderes y estadísticas de jugadores y equipos del Torneo Oficial Promocional 2026 de básquet de Santa Fe: puntos, rebotes, asistencias y valoración.",
+    });
     const { jugadores, equipos, partidos, loading, hayDatos } = useStats();
     const [vista, setVista] = useState("lideres");
     const [modo, setModo] = useState("total"); // "total" | "prom"

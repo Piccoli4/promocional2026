@@ -8,6 +8,7 @@ import { saveRoundDate, deleteRoundDate } from "../services/roundDatesService";
 import { SectionTitle, ProgressBar, Spinner } from "../components/ui/Primitives";
 import { useFixture } from "../hooks/useFixture";
 import { useAuth } from "../context/AuthContext";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { formatDateLong } from "../data/fixture";
 
 // Con tres pestañas ya no entran las etiquetas largas en un celular angosto,
@@ -19,6 +20,7 @@ const TABS = [
 ];
 
 export default function Admin() {
+    usePageMeta({ title: "Panel Admin" });
     const { fixtureWithResults, loading } = useFixture();
     const { logout } = useAuth();
     const [round, setRound] = useState(1);

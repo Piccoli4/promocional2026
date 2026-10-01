@@ -71,6 +71,11 @@ export default async function handler(req) {
           icon: '/icons/icon-192x192.png',
           badge: '/icons/icon-72x72.png',
         },
+        // Al tocarla abre la app. Los utm hacen que en Analytics esas visitas
+        // aparezcan con fuente "notificacion" (Adquisición de tráfico).
+        fcmOptions: {
+          link: 'https://promocional.com.ar/?utm_source=notificacion&utm_medium=push',
+        },
       },
     });
     totalSent += response.successCount;

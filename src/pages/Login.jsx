@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { usePageMeta } from "../hooks/usePageMeta";
 import CourtBackdrop from "../components/ui/CourtBackdrop";
 import Basketball3D from "../components/ui/Basketball3D";
 
 export default function Login() {
+    usePageMeta({ title: "Ingresar" });
     const { login, isAdmin } = useAuth();
     const navigate = useNavigate();
 

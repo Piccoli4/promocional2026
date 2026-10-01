@@ -4,6 +4,7 @@ import TeamLogo from "../components/ui/TeamLogo";
 import { SectionTitle, StatTile, Spinner, EmptyState, Chip } from "../components/ui/Primitives";
 import ShareButton from "../components/share/ShareButton";
 import { usePlayer } from "../hooks/useStats";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { segundosAReloj } from "../utils/statsCalculator";
 import { teamShortNames } from "../data/teamLogos";
 
@@ -39,6 +40,12 @@ function Porcentaje({ label, convertidos, intentados, valor }) {
 export default function PlayerDetail() {
     const { playerId } = useParams();
     const { jugador, loading } = usePlayer(playerId);
+    usePageMeta({
+        title: jugador ? nombrePropio(jugador.nombre) : "Jugador",
+        description: jugador
+            ? `Estadísticas de ${nombrePropio(jugador.nombre)} (${teamShortNames[jugador.equipo] ?? jugador.equipo}) en el Torneo Oficial Promocional 2026 de básquet de Santa Fe.`
+            : undefined,
+    });
 
     if (loading) {
         return (

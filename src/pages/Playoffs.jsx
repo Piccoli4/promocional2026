@@ -7,6 +7,7 @@ import { activeStage } from "../utils/playoffCalculator";
 import TeamLogo from "../components/ui/TeamLogo";
 import { SectionTitle, Chip, Spinner, EmptyState } from "../components/ui/Primitives";
 import { usePlayoffs } from "../hooks/usePlayoffs";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { teamTinyNames } from "../data/teamLogos";
 import { formatDate } from "../data/fixture";
 
@@ -188,6 +189,10 @@ function FinalStandings({ positions }) {
 /* ── Página ───────────────────────────────────────────────────────── */
 
 export default function Playoffs() {
+    usePageMeta({
+        title: "Fase final",
+        description: "Play In, Cuartos de Final, Semifinales y Final del Torneo Oficial Promocional 2026 de básquet de Santa Fe: cruces, series y resultados.",
+    });
     const { bracket, loading } = usePlayoffs();
     // Sin elección explícita, se abre la etapa que está en juego.
     const [picked, setPicked] = useState(null);

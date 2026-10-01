@@ -8,7 +8,7 @@
 
   <!-- SEO básico -->
   <title>Torneo Oficial Promocional 2026 | Unión y Progreso - Santa Fe</title>
-  <meta name="description" content="Seguí en tiempo real el Torneo Oficial Promocional 2026 de básquet masculino de la Asociación Santafesina de Básquetbol. Posiciones, fixture, Play In y fase final." />
+  <meta name="description" content="Tabla, fixture, resultados, estadísticas y fase final del Torneo Oficial Promocional 2026 de básquet de la Asociación Santafesina de Básquetbol." />
   <meta name="keywords" content="torneo oficial promocional 2026, básquet santa fe, unión y progreso, fixture básquet, posiciones básquet santa fe, play in, promocional" />
   <meta name="author" content="Club Unión y Progreso" />
   <link rel="canonical" href="https://promocional.com.ar/" />
@@ -18,7 +18,11 @@
   <meta property="og:url" content="https://promocional.com.ar/" />
   <meta property="og:title" content="Torneo Oficial Promocional 2026 | Básquet Santa Fe" />
   <meta property="og:description" content="Posiciones, fixture y resultados del Torneo Oficial Promocional 2026 de básquet masculino de Santa Fe" />
-  <meta property="og:image" content="https://promocional.com.ar/icons/icon-512x512.png" />
+  <meta property="og:image" content="https://promocional.com.ar/og-image.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Torneo Oficial Promocional 2026 de básquet de Santa Fe: tabla, fixture y fase final" />
   <meta property="og:locale" content="es_AR" />
   <meta property="og:site_name" content="Torneo Oficial Promocional 2026" />
 
@@ -26,11 +30,13 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Torneo Oficial Promocional 2026 | Básquet Santa Fe" />
   <meta name="twitter:description" content="Posiciones, fixture y resultados del Torneo Oficial Promocional 2026 de básquet masculino de Santa Fe" />
-  <meta name="twitter:image" content="https://promocional.com.ar/icons/icon-512x512.png" />
+  <meta name="twitter:image" content="https://promocional.com.ar/og-image.jpg" />
+  <meta name="twitter:image:alt" content="Torneo Oficial Promocional 2026 de básquet de Santa Fe: tabla, fixture y fase final" />
 
   <!-- PWA -->
-  <link rel="icon" type="image/png" href="/icons/icon-192x192.png" />
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
   <meta name="theme-color" content="#191933" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -75,7 +81,20 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Lo leen los buscadores y las redes que no ejecutan JS (y se ve mientras
+         carga). React lo reemplaza entero apenas monta. -->
+    <main style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;padding:1.5rem;text-align:center;font-family:system-ui,sans-serif">
+      <h1 style="margin:0;font-size:1.75rem">Torneo Oficial Promocional 2026</h1>
+      <p style="margin:0;max-width:28rem;opacity:0.7">Básquet de la Asociación Santafesina de Básquetbol: tabla de posiciones, fixture, resultados, estadísticas y fase final.</p>
+      <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem">
+        <a href="/tabla" style="color:inherit">Tabla</a>
+        <a href="/fixture" style="color:inherit">Fixture</a>
+        <a href="/playoffs" style="color:inherit">Fase final</a>
+        <a href="/estadisticas" style="color:inherit">Estadísticas</a>
+      </nav>
+    </main>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

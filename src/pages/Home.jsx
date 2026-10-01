@@ -13,6 +13,8 @@ import { useFixture } from "../hooks/useFixture";
 import { useStandings } from "../hooks/useStandings";
 import { usePlayoffs } from "../hooks/usePlayoffs";
 import { requestNotificationPermission, refreshNotificationToken } from "../services/messaging";
+import { trackEvent } from "../services/analytics";
+import { usePageMeta } from "../hooks/usePageMeta";
 import { formatDateLong, regularSeasonRange } from "../data/fixture";
 import { teamShortNames } from "../data/teamLogos";
 
@@ -74,6 +76,14 @@ function NotificationButton() {
     const handleClick = async () => {
         setStatus("loading");
         const token = await requestNotificationPermission();
+        // Sin token puede ser que dijo que no o que dio permiso pero falló el registro.
+        trackEvent(
+            token
+                ? "notificaciones_activadas"
+                : Notification.permission === "granted"
+                    ? "notificaciones_error"
+                    : "notificaciones_rechazadas"
+        );
         setStatus(token ? "granted" : "denied");
     };
 
@@ -95,6 +105,7 @@ function NotificationButton() {
 /* ── Página ───────────────────────────────────────────────────────── */
 
 export default function Home() {
+    usePageMeta();
     const { fixtureWithResults, loading: fixtureLoading } = useFixture();
     const { standings, loading: standingsLoading } = useStandings();
     const { bracket, loading: playoffsLoading } = usePlayoffs();
