@@ -830,14 +830,17 @@ h4 {
     animation: spin 0.9s linear infinite;
 }
 
-.skeleton {
-    background: linear-gradient(90deg,
-            var(--sunken) 0%,
-            var(--surface-2) 45%,
-            var(--sunken) 90%);
-    background-size: 220% 100%;
-    animation: shimmer 1.5s linear infinite;
-    border-radius: 0.75rem;
+/* En la capa de componentes para que `rounded-*` pueda pisar el radio */
+@layer components {
+    .skeleton {
+        background: linear-gradient(90deg,
+                var(--sunken) 0%,
+                var(--surface-2) 45%,
+                var(--sunken) 90%);
+        background-size: 220% 100%;
+        animation: shimmer 1.5s linear infinite;
+        border-radius: 0.75rem;
+    }
 }
 
 /* Línea del bracket */

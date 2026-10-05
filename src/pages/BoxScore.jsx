@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Layout from "../components/ui/Layout";
+import { BoxScoreSkeleton } from "../components/ui/Skeletons";
 import TeamLogo from "../components/ui/TeamLogo";
-import { Spinner, EmptyState, Chip } from "../components/ui/Primitives";
+import { EmptyState, Chip } from "../components/ui/Primitives";
 import ShareButton from "../components/share/ShareButton";
-import { obtenerEstadisticasPartido } from "../services/statsService";
+import { suscribirEstadisticasPartido } from "../services/statsService";
 import { conDerivados, segundosAReloj, totalesVacios, CAMPOS_SUMABLES } from "../utils/statsCalculator";
 import { teamShortNames } from "../data/teamLogos";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -157,15 +158,15 @@ export default function BoxScore() {
     // todavía se está cargando (por ejemplo, al pasar de un partido a otro).
     const [cargado, setCargado] = useState({ id: null, partido: null });
 
-    useEffect(() => {
-        let vigente = true;
-        obtenerEstadisticasPartido(matchId)
-            .catch(() => null)
-            .then((data) => vigente && setCargado({ id: matchId, partido: data }));
-        return () => {
-            vigente = false;
-        };
-    }, [matchId]);
+    useEffect(
+        () =>
+            suscribirEstadisticasPartido(
+                matchId,
+                (data) => setCargado({ id: matchId, partido: data }),
+                () => setCargado({ id: matchId, partido: null })
+            ),
+        [matchId]
+    );
 
     const loading = cargado.id !== matchId;
     const partido = loading ? null : cargado.partido;
@@ -182,7 +183,7 @@ export default function BoxScore() {
     if (loading) {
         return (
             <Layout>
-                <Spinner />
+                <BoxScoreSkeleton />
             </Layout>
         );
     }

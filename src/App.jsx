@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Layout from "./components/ui/Layout";
-import { Spinner } from "./components/ui/Primitives";
+import { RouteSkeleton } from "./components/ui/Skeletons";
 
 // La Home y el login van en el bundle principal: son las puertas de entrada.
 // El resto se baja recién al navegar (el Admin arrastra el lector de xlsx y
@@ -18,18 +18,20 @@ const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const BoxScore = lazy(() => import("./pages/BoxScore"));
 const Admin = lazy(() => import("./pages/Admin"));
 
-/** Mientras baja la página se ve la estructura de siempre, no una pantalla vacía. */
+/** Mientras baja la página se ve su silueta, no una pantalla vacía. */
 function PageFallback() {
     return (
         <Layout>
-            <Spinner />
+            <RouteSkeleton />
         </Layout>
     );
 }
 
 /** Solo accesible con sesión de admin; si no, va al login. */
 function ProtectedRoute({ children }) {
-    const { isAdmin } = useAuth();
+    const { isAdmin, loading } = useAuth();
+    // Hasta que Firebase confirme la sesión no sabemos si redirigir.
+    if (loading) return <PageFallback />;
     return isAdmin ? children : <Navigate to="/login" replace />;
 }
 

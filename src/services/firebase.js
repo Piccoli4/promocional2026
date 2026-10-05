@@ -1,5 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import {
+    initializeFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager,
+} from "firebase/firestore";
 import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getMessaging } from "firebase/messaging";
 
@@ -14,7 +18,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const db = getFirestore(app);
+// Caché en IndexedDB: al volver a abrir la app (o a una página) los datos se
+// muestran al instante desde el celular y Firestore solo baja lo que cambió.
+// Sin esto, cada visita esperaba la conexión completa con el servidor, que en
+// datos móviles tarda varios segundos. Si el navegador no tiene IndexedDB, el
+// SDK vuelve solo a la caché en memoria.
+export const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+});
 export const auth = getAuth(app);
 // Fuerza que la sesión persista en localStorage (clave para iOS PWA)
 setPersistence(auth, browserLocalPersistence);

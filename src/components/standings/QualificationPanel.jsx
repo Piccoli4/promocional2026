@@ -1,6 +1,6 @@
 import { useState } from "react";
 import TeamLogo from "../ui/TeamLogo";
-import { Spinner } from "../ui/Primitives";
+import { InlineRowsSkeleton } from "../ui/Skeletons";
 import { teamShortNames } from "../../data/teamLogos";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useQualification } from "../../hooks/useQualification";
@@ -281,7 +281,7 @@ export default function QualificationPanel({ standings }) {
             </div>
 
             {loading || !analysis ? (
-                <Spinner size={32} />
+                <InlineRowsSkeleton />
             ) : analysis.mode === "unavailable" ? (
                 <p className="px-1 pb-1 text-sm" style={{ color: "var(--text-2)" }}>
                     Se activa cuando queden {MAX_PENDING} partidos o menos por jugar

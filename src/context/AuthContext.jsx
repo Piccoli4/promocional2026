@@ -35,9 +35,8 @@ export function AuthProvider({ children }) {
         isAdmin: !!user, // true si hay usuario logueado
     };
 
-    // No renderiza nada hasta saber si hay sesión activa
-    if (loading) return null;
-
+    // No se espera a saber si hay sesión: el público no la necesita y la app
+    // arranca antes. Las rutas de admin miran `loading` (ver ProtectedRoute).
     return (
         <AuthContext.Provider value={value}>
             {children}

@@ -4,7 +4,8 @@ import RoundCard from "../components/fixture/RoundCard";
 import MatchCard from "../components/fixture/MatchCard";
 import TeamFilter from "../components/fixture/TeamFilter";
 import TeamLogo from "../components/ui/TeamLogo";
-import { SectionTitle, StatTile, Spinner, Chip } from "../components/ui/Primitives";
+import { SectionTitle, StatTile, Chip } from "../components/ui/Primitives";
+import { FixtureSkeleton } from "../components/ui/Skeletons";
 import { useFixture } from "../hooks/useFixture";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { TEAMS, formatDateLong, regularSeasonRange } from "../data/fixture";
@@ -57,6 +58,14 @@ export default function Fixture() {
         return { played, won, lost: played - won, pending: teamRounds.length - played };
     }, [teamRounds, team]);
 
+    if (loading) {
+        return (
+            <Layout>
+                <FixtureSkeleton />
+            </Layout>
+        );
+    }
+
     return (
         <Layout>
             <div className="flex flex-col gap-6">
@@ -75,7 +84,7 @@ export default function Fixture() {
                     }
                 />
 
-                {!loading && !team && (
+                {!team && (
                     <div className="grid grid-cols-3 gap-3">
                         <StatTile label="Jugados" value={totals.played} tone="ok" delay={0} />
                         <StatTile label="Pendientes" value={totals.pending} tone="muted" delay={60} />
@@ -83,7 +92,7 @@ export default function Fixture() {
                     </div>
                 )}
 
-                {!loading && team && teamStats && (
+                {team && teamStats && (
                     <div className="grid grid-cols-4 gap-3">
                         <StatTile label="Jugados" value={teamStats.played} delay={0} />
                         <StatTile label="Ganados" value={teamStats.won} tone="ok" delay={60} />
@@ -92,11 +101,9 @@ export default function Fixture() {
                     </div>
                 )}
 
-                {!loading && <TeamFilter teams={teams} selectedTeam={team} onSelect={setTeam} />}
+                <TeamFilter teams={teams} selectedTeam={team} onSelect={setTeam} />
 
-                {loading ? (
-                    <Spinner />
-                ) : team ? (
+                {team ? (
                     <div className="flex flex-col gap-6">
                         {teamRounds.map((round, i) => (
                             <div key={round.round} className="flex flex-col gap-3">

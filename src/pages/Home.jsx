@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import Basketball3D from "../components/ui/Basketball3D";
 import TeamLogo from "../components/ui/TeamLogo";
-import { StatTile, Spinner, Chip } from "../components/ui/Primitives";
+import { StatTile, Chip } from "../components/ui/Primitives";
+import { HomeSkeleton } from "../components/ui/Skeletons";
 import LastRoundResults from "../components/fixture/LastRoundResults";
 import NextRound from "../components/fixture/NextRound";
 import StandingsMini from "../components/standings/StandingsMini";
@@ -110,23 +111,36 @@ export default function Home() {
     const { standings, loading: standingsLoading } = useStandings();
     const { bracket, loading: playoffsLoading } = usePlayoffs();
 
-    const { lastPlayed, nextRound, played, total, started, regularOver } = useMemo(() => {
+    const { lastPlayed, nextRound, nextGameDate, played, total, started, regularOver } = useMemo(() => {
         const total = fixtureWithResults.reduce((a, r) => a + r.matches.length, 0);
         const played = fixtureWithResults.reduce(
             (a, r) => a + r.matches.filter((m) => m.result !== null).length,
             0
         );
+        const lastIndex = fixtureWithResults.findLastIndex((r) =>
+            r.matches.some((m) => m.result !== null)
+        );
+        // La próxima fecha es la primera con partidos pendientes *después* de la
+        // última jugada: si a esa le quedó un partido reprogramado, ya se ve en
+        // su propia tarjeta y no tiene que repetirse como "próxima".
+        const nextRound = fixtureWithResults.find(
+            (r, i) => i > lastIndex && r.matches.some((m) => m.result === null)
+        );
+        // La cuenta regresiva apunta al próximo partido que se juega, sea de la
+        // próxima fecha o uno reprogramado de una anterior.
+        const upcoming = fixtureWithResults
+            .flatMap((r) => r.matches)
+            .filter((m) => m.result === null && daysUntil(m.date) >= 0)
+            .map((m) => m.date)
+            .sort();
         return {
             total,
             played,
             started: played > 0,
             regularOver: total > 0 && played === total,
-            lastPlayed: [...fixtureWithResults]
-                .reverse()
-                .find((r) => r.matches.some((m) => m.result !== null)),
-            nextRound: fixtureWithResults.find((r) =>
-                r.matches.some((m) => m.result === null)
-            ),
+            lastPlayed: fixtureWithResults[lastIndex],
+            nextRound,
+            nextGameDate: upcoming[0] ?? nextRound?.date ?? null,
         };
     }, [fixtureWithResults]);
 
@@ -173,7 +187,7 @@ export default function Home() {
                             </p>
 
                             <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-                                {!regularOver && nextRound && <CountdownPill date={nextRound.date} />}
+                                {!regularOver && nextGameDate && <CountdownPill date={nextGameDate} />}
                                 <Link to="/tabla" className="nm-btn nm-btn-accent px-5 py-2.5 text-xs">
                                     Ver tabla
                                 </Link>
@@ -227,7 +241,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                {fixtureLoading && <Spinner />}
+                {fixtureLoading && <HomeSkeleton />}
 
                 {/* ── Torneo sin arrancar ── */}
                 {!fixtureLoading && !started && (

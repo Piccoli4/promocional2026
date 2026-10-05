@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import TeamLogo from "../ui/TeamLogo";
-import { SectionTitle, Chip, Spinner } from "../ui/Primitives";
+import { SectionTitle, Chip } from "../ui/Primitives";
+import { InlineRowsSkeleton } from "../ui/Skeletons";
 import { zoneOf } from "../../data/playoffs";
 import { teamShortNames } from "../../data/teamLogos";
 
@@ -19,7 +20,7 @@ export default function StandingsMini({ standings, loading, limit = 12 }) {
 
             <div className="nm nm-edge p-2 sm:p-3">
                 {loading ? (
-                    <Spinner size={32} />
+                    <InlineRowsSkeleton rows={limit} />
                 ) : (
                     <div className="flex flex-col gap-0.5">
                         {standings.slice(0, limit).map((entry, i) => {

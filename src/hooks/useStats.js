@@ -1,6 +1,7 @@
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo } from "react";
 import { suscribirAgregado } from "../services/statsService";
 import { conDerivados } from "../utils/statsCalculator";
+import { crearAlmacenEnVivo } from "./liveStore";
 
 /**
  * Almacén compartido del documento agregado.
@@ -10,41 +11,11 @@ import { conDerivados } from "../utils/statsCalculator";
  * tendríamos decenas de suscripciones a Firestore por pantalla. Con un único
  * listener a nivel de módulo, todos leen del mismo lugar.
  */
-
-let estado = { agregado: null, loading: true, error: null };
-const oyentes = new Set();
-let desuscribir = null;
-
-function emitir(siguiente) {
-    estado = siguiente;
-    for (const oyente of oyentes) oyente();
-}
-
-function suscribir(oyente) {
-    oyentes.add(oyente);
-
-    if (!desuscribir) {
-        desuscribir = suscribirAgregado(
-            (data) => emitir({ agregado: data, loading: false, error: null }),
-            (error) => emitir({ agregado: null, loading: false, error })
-        );
-    }
-
-    return () => {
-        oyentes.delete(oyente);
-        // Sin nadie escuchando cerramos el listener; el próximo montaje lo reabre.
-        if (oyentes.size === 0 && desuscribir) {
-            desuscribir();
-            desuscribir = null;
-            estado = { agregado: null, loading: true, error: null };
-        }
-    };
-}
-
-const leer = () => estado;
+const useAlmacenAgregado = crearAlmacenEnVivo(suscribirAgregado, null);
 
 function useAgregado() {
-    return useSyncExternalStore(suscribir, leer, leer);
+    const { data, loading, error } = useAlmacenAgregado();
+    return { agregado: data, loading, error };
 }
 
 /* ── Hooks públicos ──────────────────────────────────────────────────── */

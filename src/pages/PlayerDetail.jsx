@@ -1,7 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import Layout from "../components/ui/Layout";
+import { PlayerSkeleton } from "../components/ui/Skeletons";
 import TeamLogo from "../components/ui/TeamLogo";
-import { SectionTitle, StatTile, Spinner, EmptyState, Chip } from "../components/ui/Primitives";
+import { SectionTitle, StatTile, EmptyState, Chip } from "../components/ui/Primitives";
 import ShareButton from "../components/share/ShareButton";
 import { usePlayer } from "../hooks/useStats";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -50,7 +51,7 @@ export default function PlayerDetail() {
     if (loading) {
         return (
             <Layout>
-                <Spinner />
+                <PlayerSkeleton />
             </Layout>
         );
     }

@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import Layout from "../components/ui/Layout";
+import { StatsSkeleton } from "../components/ui/Skeletons";
 import TeamFilter from "../components/fixture/TeamFilter";
 import LeaderCard from "../components/stats/LeaderCard";
 import PlayersTable from "../components/stats/PlayersTable";
 import TeamsTable from "../components/stats/TeamsTable";
-import { SectionTitle, Spinner, EmptyState, Chip } from "../components/ui/Primitives";
+import { SectionTitle, EmptyState, Chip } from "../components/ui/Primitives";
 import { useStats } from "../hooks/useStats";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { METRICAS, maxPartidos } from "../utils/statsCalculator";
@@ -36,7 +37,7 @@ export default function Stats() {
     if (loading) {
         return (
             <Layout>
-                <Spinner />
+                <StatsSkeleton />
             </Layout>
         );
     }

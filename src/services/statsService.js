@@ -20,7 +20,6 @@ import {
     collection,
     deleteDoc,
     doc,
-    getDoc,
     getDocs,
     onSnapshot,
     setDoc,
@@ -97,10 +96,21 @@ export function suscribirAgregado(onData, onError) {
     );
 }
 
-/** Planilla completa de un partido, para el box score. */
-export async function obtenerEstadisticasPartido(matchId) {
-    const snap = await getDoc(doc(db, COL_PARTIDOS, matchId));
-    return snap.exists() ? snap.data() : null;
+/**
+ * Planilla completa de un partido, para el box score. Se escucha en vez de
+ * leerse una vez: si ya se abrió antes, llega al instante desde la caché del
+ * dispositivo (un `getDoc` siempre espera al servidor) y después se actualiza.
+ * Devuelve la función para desuscribirse.
+ */
+export function suscribirEstadisticasPartido(matchId, onData, onError) {
+    return onSnapshot(
+        doc(db, COL_PARTIDOS, matchId),
+        (snap) => onData(snap.exists() ? snap.data() : null),
+        (error) => {
+            console.error("Error al leer la planilla del partido:", error);
+            onError?.(error);
+        }
+    );
 }
 
 /** Lista liviana de qué partidos ya tienen planilla, para el panel de admin. */

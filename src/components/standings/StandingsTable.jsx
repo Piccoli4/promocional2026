@@ -1,6 +1,6 @@
 import { useState } from "react";
 import TeamLogo from "../ui/TeamLogo";
-import { Spinner } from "../ui/Primitives";
+import { StandingsTableSkeleton } from "../ui/Skeletons";
 import { teamShortNames } from "../../data/teamLogos";
 import { zoneOf } from "../../data/playoffs";
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -163,7 +163,7 @@ export default function StandingsTable({ standings, loading }) {
     const isMobile = useIsMobile();
     const [open, setOpen] = useState(null);
 
-    if (loading) return <Spinner />;
+    if (loading) return <StandingsTableSkeleton />;
 
     const cols = isMobile
         ? "2.4rem minmax(0,1fr) 2rem 2rem 2rem 2.9rem"

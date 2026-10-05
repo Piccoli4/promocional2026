@@ -1,11 +1,12 @@
 import { useState } from "react";
 import Layout from "../components/ui/Layout";
+import { PlayoffsSkeleton } from "../components/ui/Skeletons";
 import SeriesCard from "../components/playoffs/SeriesCard";
 import GameCard from "../components/playoffs/GameCard";
 import ChampionBanner from "../components/playoffs/ChampionBanner";
 import { activeStage } from "../utils/playoffCalculator";
 import TeamLogo from "../components/ui/TeamLogo";
-import { SectionTitle, Chip, Spinner, EmptyState } from "../components/ui/Primitives";
+import { SectionTitle, Chip, EmptyState } from "../components/ui/Primitives";
 import { usePlayoffs } from "../hooks/usePlayoffs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { teamTinyNames } from "../data/teamLogos";
@@ -202,7 +203,7 @@ export default function Playoffs() {
     if (loading) {
         return (
             <Layout>
-                <Spinner />
+                <PlayoffsSkeleton />
             </Layout>
         );
     }
