@@ -151,5 +151,40 @@ for (const [rounds, seed] of [[8, 7], [9, 11], [10, 23]]) {
     );
 }
 
+/* ── 4. Desempate circular con un partido sin jugar entre los empatados ── */
+{
+    // Caso real de 2026: A le ganó a B por 15, B le ganó a C por 7 y falta
+    // C–A. Si gana C quedan los tres 1-1 y define la diferencia de la
+    // reducida: B tiene −8 sí o sí, así que nunca puede quedar primero.
+    const [A, B, C] = ["U. Y PROGRESO A", "U. Y PROGRESO B", "KIMBERLEY"];
+    const fixture = [
+        { round: 1, matches: [{ id: "1-1", home: A, away: B }] },
+        { round: 2, matches: [{ id: "2-1", home: B, away: C }] },
+        { round: 3, matches: [{ id: "3-1", home: C, away: A }] },
+    ];
+    const results = {
+        "1-1": { homeScore: 69, awayScore: 54, walkover: null },
+        "2-1": { homeScore: 76, awayScore: 69, walkover: null },
+    };
+    const q = analyzeQualification(results, fixture);
+    const rango = (t) => `${q.teams[t].minPos}°–${q.teams[t].maxPos}°`;
+    check("Circular: B (−8 en la reducida) no puede quedar 1°", q.teams[B].minPos === 2, `B: ${rango(B)}`);
+    check("Circular: B puede quedar 3° (si C gana por 24 o más)", q.teams[B].maxPos === 3, `B: ${rango(B)}`);
+
+    // Contra la tabla oficial, con todos los resultados posibles de C–A.
+    let fuera = null;
+    for (let m = -80; m <= 80 && !fuera; m++) {
+        if (m === 0) continue;
+        const full = { ...results, "3-1": { homeScore: 70 + m, awayScore: 70, walkover: null } };
+        for (const e of calculateStandings(full, fixture)) {
+            const info = q.teams[e.team];
+            if (e.position < info.minPos || e.position > info.maxPos) {
+                fuera = `C–A por ${m}: ${e.team} terminó ${e.position}° y el rango era ${rango(e.team)}`;
+            }
+        }
+    }
+    check("Circular: cualquier margen de C–A cae dentro del rango", !fuera, fuera);
+}
+
 console.log(ok ? "\nTodo en orden." : "\nHay pruebas que fallan.");
 process.exit(ok ? 0 : 1);
