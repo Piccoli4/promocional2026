@@ -1,6 +1,8 @@
+import { Link } from "react-router-dom";
 import TeamLogo from "../ui/TeamLogo";
 import { teamTinyNames } from "../../data/teamLogos";
 import { formatDate } from "../../data/fixture";
+import { useMatchesWithStats } from "../../hooks/useStats";
 
 /** Marcadores de la serie: dos círculos que se encienden con cada victoria. */
 function WinDots({ wins }) {
@@ -77,7 +79,11 @@ function SideRow({ team, placeholder, seed, wins, isWinner, decided }) {
     );
 }
 
-function GameLine({ game }) {
+/**
+ * `columnaPlanilla`: si algún juego de la serie tiene planilla, todas las filas
+ * reservan la columna del enlace para que los marcadores queden alineados.
+ */
+function GameLine({ game, conPlanilla, columnaPlanilla }) {
     // El juego 2 se disputa en cancha del segundo sembrado: hay que invertir
     // el marcador para mostrarlo siempre en el orden A – B.
     const flipped = game.num === 2;
@@ -94,7 +100,7 @@ function GameLine({ game }) {
         <div
             className="grid items-center gap-2 rounded-xl px-2 py-1"
             style={{
-                gridTemplateColumns: "1.6rem 1fr auto",
+                gridTemplateColumns: columnaPlanilla ? "1.6rem 1fr auto 4.2rem" : "1.6rem 1fr auto",
                 opacity: muted ? 0.35 : 1,
             }}
         >
@@ -121,12 +127,26 @@ function GameLine({ game }) {
             >
                 {game.played ? `${scoreA} – ${scoreB}` : "– –"}
             </span>
+            {columnaPlanilla &&
+                (conPlanilla ? (
+                    <Link
+                        to={`/partido/${game.id}`}
+                        className="cond justify-self-end text-[0.62rem] font-bold uppercase tracking-[0.14em]"
+                        style={{ color: "var(--red)" }}
+                    >
+                        Planilla →
+                    </Link>
+                ) : (
+                    <span />
+                ))}
         </div>
     );
 }
 
 export default function SeriesCard({ series, delay = 0, compact = false }) {
     const { teamA, teamB, seedA, seedB, winsA, winsB, winner, over, ready } = series;
+    const conPlanilla = useMatchesWithStats();
+    const columnaPlanilla = series.games.some((g) => conPlanilla.has(g.id));
 
     const status = over
         ? { text: "Serie definida", color: "var(--ok)" }
@@ -179,7 +199,12 @@ export default function SeriesCard({ series, delay = 0, compact = false }) {
                     style={{ borderColor: "var(--line)" }}
                 >
                     {series.games.map((game) => (
-                        <GameLine key={game.id} game={game} />
+                        <GameLine
+                            key={game.id}
+                            game={game}
+                            conPlanilla={conPlanilla.has(game.id)}
+                            columnaPlanilla={columnaPlanilla}
+                        />
                     ))}
                 </div>
             )}

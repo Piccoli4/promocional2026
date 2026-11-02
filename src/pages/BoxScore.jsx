@@ -8,6 +8,7 @@ import ShareButton from "../components/share/ShareButton";
 import { suscribirEstadisticasPartido } from "../services/statsService";
 import { conDerivados, segundosAReloj, totalesVacios, CAMPOS_SUMABLES } from "../utils/statsCalculator";
 import { teamShortNames } from "../data/teamLogos";
+import { etiquetaJuegoPlayoff } from "../data/playoffs";
 import { usePageMeta } from "../hooks/usePageMeta";
 
 /**
@@ -206,6 +207,8 @@ export default function BoxScore() {
     }
 
     const [local, visitante] = partido.equipos;
+    const etiqueta =
+        partido.fase === "regular" ? `${partido.fecha}ª Fecha` : etiquetaJuegoPlayoff(matchId);
 
     return (
         <Layout>
@@ -224,7 +227,7 @@ export default function BoxScore() {
                             {partido.ptsLocal} - {partido.ptsVisitante}
                         </span>
                         <span className="eyebrow">
-                            {partido.fase === "regular" ? `${partido.fecha}ª Fecha` : "Fase Final"}
+                            {etiqueta}
                         </span>
                     </div>
 
@@ -246,8 +249,7 @@ export default function BoxScore() {
                         visitante: visitante.key,
                         ptsLocal: partido.ptsLocal,
                         ptsVisitante: partido.ptsVisitante,
-                        etiqueta:
-                            partido.fase === "regular" ? `${partido.fecha}ª Fecha` : "Fase Final",
+                        etiqueta,
                     }}
                 />
 

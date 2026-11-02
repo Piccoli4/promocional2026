@@ -1,6 +1,8 @@
+import { Link } from "react-router-dom";
 import TeamLogo from "../ui/TeamLogo";
 import { teamTinyNames } from "../../data/teamLogos";
 import { formatDateLong } from "../../data/fixture";
+import { useMatchesWithStats } from "../../hooks/useStats";
 
 function SideRow({ team, placeholder, seed, score, isWinner, played }) {
     const name = team ? teamTinyNames[team] ?? team : placeholder;
@@ -72,6 +74,7 @@ export default function GameCard({ game, delay = 0, showLabel = true }) {
     const { played, result, winner } = game;
     const homeScore = played ? Number(result.homeScore) : null;
     const awayScore = played ? Number(result.awayScore) : null;
+    const conPlanilla = useMatchesWithStats().has(game.id);
 
     return (
         <article
@@ -108,6 +111,18 @@ export default function GameCard({ game, delay = 0, showLabel = true }) {
                 isWinner={played && winner === game.away}
                 played={played}
             />
+
+            {conPlanilla && (
+                <div className="flex justify-end px-2 pt-1.5">
+                    <Link
+                        to={`/partido/${game.id}`}
+                        className="cond text-[0.62rem] font-bold uppercase tracking-[0.14em]"
+                        style={{ color: "var(--red)" }}
+                    >
+                        Planilla →
+                    </Link>
+                </div>
+            )}
         </article>
     );
 }

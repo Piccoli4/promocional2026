@@ -28,6 +28,31 @@ export const STAGES = {
     repo: { key: "repo", name: "Reposicionamiento 9° a 12°", short: "9°–12°" },
 };
 
+/**
+ * Nombre legible de un juego de la fase final a partir de su id
+ * (el mismo que arma playoffCalculator): "pi2g1" → "Play In · J1".
+ */
+export function etiquetaJuegoPlayoff(id = "") {
+    const serie = id.match(/^(pi|qf|sf|f)\d*g(\d)$/);
+    if (serie) {
+        const etapa = { pi: STAGES.playIn, qf: STAGES.quarters, sf: STAGES.semis, f: STAGES.final }[serie[1]];
+        return `${etapa.short} · J${serie[2]}`;
+    }
+
+    const repo = id.match(/^repo(\d)[ab]$/);
+    if (repo) return `Reposicionamiento · ${repo[1]}ª jornada`;
+
+    return (
+        {
+            p34: "Tercer puesto",
+            g58a: "Puestos 5° a 8°",
+            g58b: "Puestos 5° a 8°",
+            p56: "Quinto puesto",
+            p78: "Séptimo puesto",
+        }[id] ?? "Fase Final"
+    );
+}
+
 /** Etiqueta ordinal: 1 → "1°" */
 export const ord = (n) => (n == null ? "—" : `${n}°`);
 

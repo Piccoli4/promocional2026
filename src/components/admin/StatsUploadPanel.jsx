@@ -11,6 +11,7 @@ import {
 import { useFixture } from "../../hooks/useFixture";
 import { usePlayoffs } from "../../hooks/usePlayoffs";
 import { TEAMS } from "../../data/fixture";
+import { etiquetaJuegoPlayoff } from "../../data/playoffs";
 import { teamTinyNames } from "../../data/teamLogos";
 import TeamLogo from "../ui/TeamLogo";
 import { Chip, EmptyState, Spinner } from "../ui/Primitives";
@@ -419,7 +420,7 @@ export default function StatsUploadPanel() {
                                 </span>
                                 <TeamLogo team={p.visitante} size={26} />
                                 <span className="cond hidden shrink-0 text-[0.65rem] uppercase tracking-wider sm:block" style={{ color: "var(--text-3)" }}>
-                                    {p.fase === "regular" ? `${p.fecha}ª fecha` : "Fase final"} · {p.jugadores} j.
+                                    {p.fase === "regular" ? `${p.fecha}ª fecha` : etiquetaJuegoPlayoff(p.matchId)} · {p.jugadores} j.
                                 </span>
                                 <button
                                     onClick={() => borrar(p.matchId)}
