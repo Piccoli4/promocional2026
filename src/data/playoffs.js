@@ -1,20 +1,22 @@
 /**
  * Calendario y metadatos de la Fase Final — Torneo Oficial Promocional 2026.
  * Fuente: reglamento ASB (páginas 1 y 2) + planilla oficial.
+ * La fase regular terminó una semana más tarde (25/10), así que todo el
+ * calendario se corrió dos semanas: el Play In arrancó el 01/11.
  */
 
 export const PLAYOFF_DATES = {
-    playIn: ["2026-10-18", "2026-10-25", "2026-10-27"],
-    quarters: ["2026-11-01", "2026-11-08", "2026-11-10"],
-    semis: ["2026-11-15", "2026-11-22", "2026-11-24"],
-    final: ["2026-11-29", "2026-12-05", "2026-12-12"],
+    playIn: ["2026-11-01", "2026-11-08", "2026-11-10"],
+    quarters: ["2026-11-15", "2026-11-22", "2026-11-24"],
+    semis: ["2026-11-29", "2026-12-06", "2026-12-08"],
+    final: ["2026-12-13", "2026-12-19", "2026-12-26"],
     // Cruces 5°–8°: a un solo juego
-    semis58: "2026-11-15",
-    place56: "2026-11-22",
-    place78: "2026-11-22",
-    place34: "2026-11-29",
+    semis58: "2026-11-29",
+    place56: "2026-12-06",
+    place78: "2026-12-06",
+    place34: "2026-12-13",
     // Reposicionamiento 9°–12°: round robin de 3 jornadas
-    repo: ["2026-11-01", "2026-11-08", "2026-11-15"],
+    repo: ["2026-11-15", "2026-11-22", "2026-11-29"],
 };
 
 export const STAGES = {

@@ -10,7 +10,8 @@ import { SectionTitle, Chip, EmptyState } from "../components/ui/Primitives";
 import { usePlayoffs } from "../hooks/usePlayoffs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { teamTinyNames } from "../data/teamLogos";
-import { formatDate } from "../data/fixture";
+import { formatDate, formatDayMonth } from "../data/fixture";
+import { PLAYOFF_DATES } from "../data/playoffs";
 
 const TABS = [
     { key: "playIn", label: "Play In", hint: "5° a 12° · al mejor de 3" },
@@ -214,7 +215,7 @@ export default function Playoffs() {
         <Layout>
             <div className="flex flex-col gap-6">
                 <SectionTitle
-                    eyebrow="Del 18 de octubre al 12 de diciembre"
+                    eyebrow={`Del ${formatDayMonth(PLAYOFF_DATES.playIn[0])} al ${formatDayMonth(PLAYOFF_DATES.final.at(-1))}`}
                     title="Fase Final"
                 />
 

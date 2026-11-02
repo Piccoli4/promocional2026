@@ -12,13 +12,13 @@ Sistema web para seguir el torneo en tiempo real: fixture, tabla de posiciones y
 
 | Etapa | Formato | Fechas |
 |---|---|---|
-| Fase Regular | Zona única, 12 equipos, todos contra todos ida, 11 fechas | 02/08 al 18/10 |
-| Play In | 5°v12° · 6°v11° · 7°v10° · 8°v9° — al mejor de 3 (1-1-1) | 18/10 · 25/10 · 27/10 |
-| Cuartos de Final | 1°v8° · 2°v7° · 3°v6° · 4°v5° — al mejor de 3 | 01/11 · 08/11 · 10/11 |
-| Semifinales | Reordenamiento: 1°v4° · 2°v3° — al mejor de 3 | 15/11 · 22/11 · 24/11 |
-| Final | 1°v2° — al mejor de 3 · tercer puesto a un juego | 29/11 · 05/12 · 12/12 |
-| Puestos 5° a 8° | Perdedores de cuartos, todos a un juego | 15/11 · 22/11 |
-| Reposicionamiento 9° a 12° | Perdedores del Play In, round robin de 3 jornadas | 01/11 · 08/11 · 15/11 |
+| Fase Regular | Zona única, 12 equipos, todos contra todos ida, 11 fechas | 02/08 al 25/10 |
+| Play In | 5°v12° · 6°v11° · 7°v10° · 8°v9° — al mejor de 3 (1-1-1) | 01/11 · 08/11 · 10/11 |
+| Cuartos de Final | 1°v8° · 2°v7° · 3°v6° · 4°v5° — al mejor de 3 | 15/11 · 22/11 · 24/11 |
+| Semifinales | Reordenamiento: 1°v4° · 2°v3° — al mejor de 3 | 29/11 · 06/12 · 08/12 |
+| Final | 1°v2° — al mejor de 3 · tercer puesto a un juego | 13/12 · 19/12 · 26/12 |
+| Puestos 5° a 8° | Perdedores de cuartos, todos a un juego | 29/11 · 06/12 |
+| Reposicionamiento 9° a 12° | Perdedores del Play In, round robin de 3 jornadas | 15/11 · 22/11 · 29/11 |
 
 Los 4 primeros de la fase regular clasifican directo a Cuartos; del 5° al 12° pasan por el Play In.
 

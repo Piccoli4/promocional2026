@@ -3,7 +3,8 @@
  *
  * Fase Regular: zona única, 12 equipos, todos contra todos ida, 11 fechas.
  * Son las vueltas del Torneo Apertura (localía invertida).
- * Del 02/08 al 18/10 (desde la 6ª fecha el calendario se corrió una semana).
+ * Del 02/08 al 25/10 (desde la 6ª fecha el calendario se corrió una semana
+ * y la 11ª, una más).
  */
 
 export const TEAMS = [
@@ -23,7 +24,8 @@ export const TEAMS = [
 
 /**
  * Fechas de la fase regular (ANEXO II del reglamento).
- * Desde la 6ª fecha se corrieron una semana respecto del reglamento.
+ * Desde la 6ª fecha se corrieron una semana respecto del reglamento,
+ * y la 11ª se jugó una semana después de eso.
  * Son los valores por defecto: el admin puede reprogramar cualquier fecha
  * y ese cambio (guardado en Firestore, colección "roundDates") tiene prioridad.
  */
@@ -38,7 +40,7 @@ export const ROUND_DATES = {
     8: "2026-09-27",
     9: "2026-10-04",
     10: "2026-10-11",
-    11: "2026-10-18",
+    11: "2026-10-25",
 };
 
 const RAW_ROUNDS = [
@@ -173,7 +175,7 @@ export function formatDayMonth(iso) {
     return new Date(y, m - 1, d).toLocaleDateString("es-AR", { day: "numeric", month: "long" });
 }
 
-/** Rango de la fase regular a partir de las fechas vigentes: "del 2 de agosto al 18 de octubre". */
+/** Rango de la fase regular a partir de las fechas vigentes: "del 2 de agosto al 25 de octubre". */
 export function regularSeasonRange(rounds) {
     const dates = rounds.map((r) => r.date).filter(Boolean).sort();
     if (!dates.length) return "";

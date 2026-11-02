@@ -4,12 +4,22 @@ import GameCard from "./GameCard";
 import ChampionBanner from "./ChampionBanner";
 import { SectionTitle, Chip } from "../ui/Primitives";
 import { activeStage } from "../../utils/playoffCalculator";
+import { PLAYOFF_DATES } from "../../data/playoffs";
+import { formatDayMonth } from "../../data/fixture";
+
+/** ["2026-11-01", …, "2026-11-10"] → "Del 1 al 10 de noviembre" (o "Del 29 de noviembre al 8 de diciembre"). */
+function rango(dates) {
+    const desde = formatDayMonth(dates[0]);
+    const hasta = formatDayMonth(dates.at(-1));
+    const mismoMes = dates[0].slice(0, 7) === dates.at(-1).slice(0, 7);
+    return `Del ${mismoMes ? desde.split(" ")[0] : desde} al ${hasta}`;
+}
 
 const STAGE_TITLES = {
-    playIn: { eyebrow: "Del 18 al 27 de octubre", title: "Play In" },
-    quarters: { eyebrow: "Del 1 al 10 de noviembre", title: "Cuartos de Final" },
-    semis: { eyebrow: "Del 15 al 24 de noviembre", title: "Semifinales" },
-    final: { eyebrow: "Del 29/11 al 12/12", title: "Gran Final" },
+    playIn: { eyebrow: rango(PLAYOFF_DATES.playIn), title: "Play In" },
+    quarters: { eyebrow: rango(PLAYOFF_DATES.quarters), title: "Cuartos de Final" },
+    semis: { eyebrow: rango(PLAYOFF_DATES.semis), title: "Semifinales" },
+    final: { eyebrow: rango(PLAYOFF_DATES.final), title: "Gran Final" },
 };
 
 export default function PlayoffMini({ bracket, loading }) {
@@ -20,7 +30,7 @@ export default function PlayoffMini({ bracket, loading }) {
     if (!stage) {
         return (
             <section className="flex flex-col gap-4">
-                <SectionTitle eyebrow="Arranca el 18 de octubre" title="Fase Final" />
+                <SectionTitle eyebrow={`Arranca el ${formatDayMonth(PLAYOFF_DATES.playIn[0])}`} title="Fase Final" />
                 <div className="nm nm-edge a-rise flex flex-col gap-3 p-5">
                     <p className="text-sm" style={{ color: "var(--text-2)" }}>
                         Los 4 primeros van directo a Cuartos. Del 5° al 12° juegan

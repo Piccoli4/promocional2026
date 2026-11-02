@@ -168,6 +168,9 @@ export default function StatsUploadPanel() {
     const [cola, setCola] = useState([]);
     const [yaCargados, setYaCargados] = useState({});
     const [guardando, setGuardando] = useState(false);
+    // Foto de yaCargados al tocar Guardar: mientras se guarda, cada planilla escrita
+    // dispara la suscripción y las tarjetas en cola se avisarían a sí mismas que "pisan".
+    const [cargadosAlGuardar, setCargadosAlGuardar] = useState(null);
     const [mensaje, setMensaje] = useState(null);
     const [arrastrando, setArrastrando] = useState(false);
     const inputRef = useRef(null);
@@ -244,6 +247,7 @@ export default function StatsUploadPanel() {
     const listos = cola.filter((i) => !i.error && i.localKey && i.visitanteKey && i.matchId);
 
     const guardar = async () => {
+        setCargadosAlGuardar(yaCargados);
         setGuardando(true);
         setMensaje(null);
 
@@ -284,6 +288,7 @@ export default function StatsUploadPanel() {
             setMensaje({ tono: "error", texto: `No se pudo guardar: ${err.message}` });
         } finally {
             setGuardando(false);
+            setCargadosAlGuardar(null);
         }
     };
 
@@ -375,7 +380,7 @@ export default function StatsUploadPanel() {
                                 key={item.key}
                                 item={item}
                                 partidos={partidos}
-                                yaCargados={yaCargados}
+                                yaCargados={cargadosAlGuardar ?? yaCargados}
                                 onChange={(cambios) => actualizar(item.key, cambios)}
                                 onRemove={() => setCola((prev) => prev.filter((i) => i.key !== item.key))}
                             />
