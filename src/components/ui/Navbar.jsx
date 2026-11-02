@@ -67,7 +67,7 @@ const LINKS = [
     { to: "/tabla", label: "Tabla", icon: "table" },
     { to: "/fixture", label: "Fixture", icon: "calendar" },
     { to: "/estadisticas", label: "Estadísticas", icon: "chart" },
-    { to: "/playoffs", label: "Final", icon: "trophy" },
+    { to: "/playoffs", label: "Playoff", icon: "trophy" },
 ];
 
 /* ── Interruptor de tema: knob neumórfico que se desliza ──────────── */

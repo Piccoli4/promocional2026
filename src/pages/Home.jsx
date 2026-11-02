@@ -195,7 +195,7 @@ export default function Home() {
                                     Fixture
                                 </Link>
                                 <Link to="/playoffs" className="nm-btn px-5 py-2.5 text-xs">
-                                    🏆 Fase final
+                                    🏆 Playoff
                                 </Link>
                                 <NotificationButton />
                             </div>

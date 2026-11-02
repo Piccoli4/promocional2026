@@ -2,7 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import { PlayerSkeleton } from "../components/ui/Skeletons";
 import TeamLogo from "../components/ui/TeamLogo";
-import { SectionTitle, StatTile, EmptyState, Chip } from "../components/ui/Primitives";
+import { SectionTitle, StatTile, EmptyState, Chip, ScrollX } from "../components/ui/Primitives";
 import ShareButton from "../components/share/ShareButton";
 import { usePlayer } from "../hooks/useStats";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -161,7 +161,7 @@ export default function PlayerDetail() {
                 <div className="flex flex-col gap-3">
                     <span className="eyebrow">Partido a partido</span>
                     <div className="nm nm-edge overflow-hidden">
-                        <div className="no-bar overflow-x-auto">
+                        <ScrollX>
                             <table className="w-full min-w-max text-sm">
                                 <thead>
                                     <tr style={{ borderBottom: "1px solid var(--line)" }}>
@@ -214,7 +214,7 @@ export default function PlayerDetail() {
                                     ))}
                                 </tbody>
                             </table>
-                        </div>
+                        </ScrollX>
                     </div>
                 </div>
 

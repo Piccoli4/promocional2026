@@ -49,7 +49,7 @@ export function etiquetaJuegoPlayoff(id = "") {
             g58b: "Puestos 5° a 8°",
             p56: "Quinto puesto",
             p78: "Séptimo puesto",
-        }[id] ?? "Fase Final"
+        }[id] ?? "Playoff"
     );
 }
 

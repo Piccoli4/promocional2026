@@ -1,6 +1,39 @@
+import { useEffect, useRef, useState } from "react";
+
 /**
  * Piezas reutilizables del sistema neumórfico.
  */
+
+/**
+ * Contenedor con scroll horizontal (tablas anchas en el celular). La barra está
+ * oculta, así que mientras quede contenido a la derecha el borde se desvanece
+ * para que se note que se puede deslizar.
+ */
+export function ScrollX({ children }) {
+    const ref = useRef(null);
+    const [quedaMas, setQuedaMas] = useState(false);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const medir = () => setQuedaMas(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+        medir();
+        el.addEventListener("scroll", medir, { passive: true });
+        const observer = new ResizeObserver(medir);
+        observer.observe(el);
+        if (el.firstElementChild) observer.observe(el.firstElementChild);
+        return () => {
+            el.removeEventListener("scroll", medir);
+            observer.disconnect();
+        };
+    }, []);
+
+    return (
+        <div ref={ref} className={`no-bar overflow-x-auto ${quedaMas ? "fade-end" : ""}`}>
+            {children}
+        </div>
+    );
+}
 
 export function SectionTitle({ eyebrow, title, right, className = "" }) {
     return (

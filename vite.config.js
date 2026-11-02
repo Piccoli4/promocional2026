@@ -26,7 +26,7 @@ export default defineConfig({
       manifest: {
         name: 'Torneo Oficial Promocional 2026',
         short_name: 'Promocional 2026',
-        description: 'Fixture, tabla de posiciones, Play In y fase final del Torneo Oficial Promocional 2026',
+        description: 'Fixture, tabla de posiciones, Play In y playoff del Torneo Oficial Promocional 2026',
         theme_color: '#191933',
         background_color: '#191933',
         display: 'standalone',

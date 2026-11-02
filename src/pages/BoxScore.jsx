@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Layout from "../components/ui/Layout";
 import { BoxScoreSkeleton } from "../components/ui/Skeletons";
 import TeamLogo from "../components/ui/TeamLogo";
-import { EmptyState, Chip } from "../components/ui/Primitives";
+import { EmptyState, Chip, ScrollX } from "../components/ui/Primitives";
 import ShareButton from "../components/share/ShareButton";
 import { suscribirEstadisticasPartido } from "../services/statsService";
 import { conDerivados, segundosAReloj, totalesVacios, CAMPOS_SUMABLES } from "../utils/statsCalculator";
@@ -72,7 +72,7 @@ function TablaEquipo({ equipo }) {
             </div>
 
             <div className="nm nm-edge overflow-hidden">
-                <div className="no-bar overflow-x-auto">
+                <ScrollX>
                     <table className="w-full min-w-max text-sm">
                         <thead>
                             <tr style={{ borderBottom: "1px solid var(--line)" }}>
@@ -147,7 +147,7 @@ function TablaEquipo({ equipo }) {
                             </tr>
                         </tbody>
                     </table>
-                </div>
+                </ScrollX>
             </div>
         </div>
     );

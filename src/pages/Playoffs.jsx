@@ -192,7 +192,7 @@ function FinalStandings({ positions }) {
 
 export default function Playoffs() {
     usePageMeta({
-        title: "Fase final",
+        title: "Playoff",
         description: "Play In, Cuartos de Final, Semifinales y Final del Torneo Oficial Promocional 2026 de básquet de Santa Fe: cruces, series y resultados.",
     });
     const { bracket, loading } = usePlayoffs();
@@ -216,18 +216,18 @@ export default function Playoffs() {
             <div className="flex flex-col gap-6">
                 <SectionTitle
                     eyebrow={`Del ${formatDayMonth(PLAYOFF_DATES.playIn[0])} al ${formatDayMonth(PLAYOFF_DATES.final.at(-1))}`}
-                    title="Fase Final"
+                    title="Playoff"
                 />
 
                 {bracket.champion && <ChampionBanner team={bracket.champion} />}
 
                 {/* Navegación de etapas */}
-                <div className="no-bar -mx-1 flex gap-2 overflow-x-auto px-1 py-1">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                     {TABS.map((t) => (
                         <button
                             key={t.key}
                             onClick={() => setTab(t.key)}
-                            className={`nm-btn shrink-0 px-4 py-2.5 text-xs ${tab === t.key ? "nm-btn-on" : ""}`}
+                            className={`nm-btn px-2 py-2.5 text-xs ${tab === t.key ? "nm-btn-on" : ""}`}
                         >
                             {t.label}
                         </button>

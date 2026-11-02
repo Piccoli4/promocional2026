@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import TeamLogo from "../ui/TeamLogo";
+import { ScrollX } from "../ui/Primitives";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { segundosAReloj } from "../../utils/statsCalculator";
 
@@ -67,7 +68,7 @@ export default function PlayersTable({ jugadores, modo }) {
 
     return (
         <div className="nm nm-edge overflow-hidden">
-            <div className="no-bar overflow-x-auto">
+            <ScrollX>
                 <table className="w-full min-w-max text-sm">
                     <thead>
                         <tr style={{ borderBottom: "1px solid var(--line)" }}>
@@ -142,7 +143,7 @@ export default function PlayersTable({ jugadores, modo }) {
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </ScrollX>
         </div>
     );
 }

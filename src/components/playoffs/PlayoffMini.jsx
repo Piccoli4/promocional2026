@@ -30,7 +30,7 @@ export default function PlayoffMini({ bracket, loading }) {
     if (!stage) {
         return (
             <section className="flex flex-col gap-4">
-                <SectionTitle eyebrow={`Arranca el ${formatDayMonth(PLAYOFF_DATES.playIn[0])}`} title="Fase Final" />
+                <SectionTitle eyebrow={`Arranca el ${formatDayMonth(PLAYOFF_DATES.playIn[0])}`} title="Playoff" />
                 <div className="nm nm-edge a-rise flex flex-col gap-3 p-5">
                     <p className="text-sm" style={{ color: "var(--text-2)" }}>
                         Los 4 primeros van directo a Cuartos. Del 5° al 12° juegan

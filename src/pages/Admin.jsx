@@ -15,7 +15,7 @@ import { formatDateLong } from "../data/fixture";
 // así que cada una lleva también su versión corta.
 const TABS = [
     { id: "regular", icon: "🏀", label: "Fase Regular", corto: "Regular" },
-    { id: "playoffs", icon: "🏆", label: "Fase Final", corto: "Final" },
+    { id: "playoffs", icon: "🏆", label: "Playoff", corto: "Playoff" },
     { id: "stats", icon: "📊", label: "Estadísticas", corto: "Stats" },
 ];
 
@@ -73,7 +73,7 @@ export default function Admin() {
                     <>
                         <div className="flex flex-col gap-2.5">
                             <span className="eyebrow">Seleccioná una fecha</span>
-                            <div className="no-bar -mx-1 flex gap-2 overflow-x-auto px-1 py-1">
+                            <div className="grid grid-cols-6 gap-2 sm:grid-cols-11">
                                 {fixtureWithResults.map((r) => {
                                     const active = r.round === round;
                                     const done = r.matches.every((m) => m.result !== null);
@@ -83,7 +83,7 @@ export default function Admin() {
                                         <button
                                             key={r.round}
                                             onClick={() => setRound(r.round)}
-                                            className={`nm-btn relative shrink-0 px-4 py-2.5 text-xs ${active ? "nm-btn-on" : ""}`}
+                                            className={`nm-btn relative px-1 py-2.5 text-xs ${active ? "nm-btn-on" : ""}`}
                                         >
                                             {r.round}ª
                                             {!active && some && (

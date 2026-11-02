@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import TeamLogo from "../ui/TeamLogo";
+import { ScrollX } from "../ui/Primitives";
 import { teamShortNames } from "../../data/teamLogos";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { porPartido } from "../../utils/statsCalculator";
@@ -64,7 +65,7 @@ export default function TeamsTable({ equipos, modo }) {
 
     return (
         <div className="nm nm-edge overflow-hidden">
-            <div className="no-bar overflow-x-auto">
+            <ScrollX>
                 <table className="w-full min-w-max text-sm">
                     <thead>
                         <tr style={{ borderBottom: "1px solid var(--line)" }}>
@@ -140,7 +141,7 @@ export default function TeamsTable({ equipos, modo }) {
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </ScrollX>
         </div>
     );
 }
