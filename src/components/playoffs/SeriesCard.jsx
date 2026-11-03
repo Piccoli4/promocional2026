@@ -23,6 +23,49 @@ function WinDots({ wins }) {
     );
 }
 
+/** Rival que sale del Play In en juego: escudos de los que todavía pueden tocarle. */
+function CandidatesRow({ candidates, placeholder }) {
+    const projected = candidates.find((c) => c.projected);
+
+    return (
+        <div className="flex items-center gap-2.5 rounded-2xl px-2 py-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="flex flex-wrap items-center gap-1.5">
+                    {candidates.map((c) => (
+                        <span key={c.team} title={teamTinyNames[c.team] ?? c.team} className="inline-flex">
+                            <TeamLogo
+                                team={c.team}
+                                size={c.projected ? 28 : 22}
+                                dim={!!projected && !c.projected}
+                            />
+                        </span>
+                    ))}
+                </span>
+                <span
+                    className="cond truncate text-[0.7rem] font-bold uppercase tracking-wide"
+                    style={{ color: "var(--text-3)" }}
+                >
+                    <span className="italic">{placeholder}</span>
+                    {projected && (
+                        <>
+                            {" · "}hoy:{" "}
+                            <span style={{ color: "var(--red)" }}>
+                                {teamTinyNames[projected.team] ?? projected.team}
+                            </span>
+                        </>
+                    )}
+                </span>
+            </div>
+
+            <WinDots wins={0} />
+
+            <span className="tabular w-5 shrink-0 text-center text-lg" style={{ color: "var(--text-2)" }}>
+                0
+            </span>
+        </div>
+    );
+}
+
 function SideRow({ team, placeholder, seed, wins, isWinner, decided }) {
     const name = team ? teamTinyNames[team] ?? team : placeholder;
 
@@ -184,14 +227,18 @@ export default function SeriesCard({ series, delay = 0, compact = false }) {
                 isWinner={over && winner === teamA}
                 decided={over}
             />
-            <SideRow
-                team={teamB}
-                placeholder={series.labelB}
-                seed={seedB}
-                wins={winsB}
-                isWinner={over && winner === teamB}
-                decided={over}
-            />
+            {!teamB && series.candidatesB?.length ? (
+                <CandidatesRow candidates={series.candidatesB} placeholder={series.labelB} />
+            ) : (
+                <SideRow
+                    team={teamB}
+                    placeholder={series.labelB}
+                    seed={seedB}
+                    wins={winsB}
+                    isWinner={over && winner === teamB}
+                    decided={over}
+                />
+            )}
 
             {!compact && (
                 <div

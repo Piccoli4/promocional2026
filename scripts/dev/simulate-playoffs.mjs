@@ -40,6 +40,31 @@ check("Play In 1 enfrenta 5° y 12°", [b.playIn[0].teamA, b.playIn[0].teamB], [
 check("Play In juego 1 local = mejor sembrado", b.playIn[0].games[0].home, "T5");
 check("Play In juego 2 local = peor sembrado", b.playIn[0].games[1].home, "T12");
 
+// ── Play In en juego: rivales posibles de Cuartos ──
+const rivals = (bracket, i) =>
+    bracket.quarterFinals[i].candidatesB.map((c) => `${c.team}${c.projected ? "*" : ""}`);
+
+check("Sin jugar: el 1° puede cruzar con 8°–12°, nadie proyectado",
+    rivals(b, 0), ["T8", "T9", "T10", "T11", "T12"]);
+
+play(b, "pi1", 1, "A"); play(b, "pi2", 1, "A"); play(b, "pi3", 1, "A"); play(b, "pi4", 1, "B");
+b = computeBracket(top12, R);
+check("Series 1-0: rivales posibles del 1° con T9 proyectado",
+    rivals(b, 0), ["T8", "T9*", "T10", "T11", "T12"]);
+check("Series 1-0: rivales posibles del 4° con T5 proyectado",
+    rivals(b, 3), ["T5*", "T6", "T7", "T8", "T9"]);
+
+play(b, "pi4", 2, "B");   // T9 cierra 2-0 antes que las demás
+b = computeBracket(top12, R);
+check("Serie cerrada: T8 deja de ser posible", rivals(b, 0), ["T9*", "T10", "T11", "T12"]);
+check("Con el Play In abierto, Cuartos sigue sin rivales",
+    b.quarterFinals.map((q) => q.teamB), [null, null, null, null]);
+
+play(b, "pi2", 2, "B");   // 6v11 queda 1-1
+b = computeBracket(top12, R);
+check("Serie 1-1: sin proyectado donde depende de ella",
+    [rivals(b, 0), rivals(b, 1)], [["T9", "T10", "T11", "T12"], ["T7", "T9", "T10", "T11"]]);
+
 play(b, "pi1", 1, "A"); play(b, "pi1", 2, "A");   // T5 2-0
 play(b, "pi2", 1, "B"); play(b, "pi2", 2, "A"); play(b, "pi2", 3, "A"); // T6 2-1
 play(b, "pi3", 1, "A"); play(b, "pi3", 2, "A");   // T7 2-0

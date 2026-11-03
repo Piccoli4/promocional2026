@@ -140,6 +140,40 @@ function series({ id, stage, label, a, b, dates, results, labelA, labelB }) {
     };
 }
 
+/* ── Rivales posibles de Cuartos mientras se juega el Play In ─────── */
+
+/**
+ * Para cada puesto 5°–8° de la Fase Campeonato: qué equipos todavía pueden
+ * ocuparlo y cuál lo ocuparía si cada serie la gana quien la va ganando.
+ * Una serie empatada no proyecta a nadie, así que un puesto solo tiene
+ * proyectado si sale el mismo gane quien gane esa serie.
+ */
+function playInOutlook(playIn) {
+    if (!playIn.every((s) => s.ready)) return null;
+
+    const alive = (s) => (s.over ? [s.winnerSlot] : [s.a, s.b]);
+    const leading = (s) =>
+        s.winsA > s.winsB ? [s.a] : s.winsB > s.winsA ? [s.b] : [s.a, s.b];
+
+    // Todas las combinaciones de ganadores, ya ordenadas como 5° a 8°.
+    const outcomes = (pick) =>
+        playIn
+            .reduce((combos, s) => combos.flatMap((c) => pick(s).map((w) => [...c, w])), [[]])
+            .map((c) => c.sort(byRegSeed));
+
+    const possible = outcomes(alive);
+    const projected = outcomes(leading);
+
+    return [0, 1, 2, 3].map((i) => {
+        const teams = new Map(possible.map((c) => [c[i].team, c[i]]));
+        const sure = new Set(projected.map((c) => c[i].team));
+        const proj = sure.size === 1 ? [...sure][0] : null;
+        return [...teams.values()]
+            .sort(byRegSeed)
+            .map((s) => ({ team: s.team, seed: s.seed, projected: s.team === proj }));
+    });
+}
+
 /* ── Tabla del reposicionamiento (round robin de 4) ───────────────── */
 
 function repoStandings(slots, matches) {
@@ -232,15 +266,20 @@ export function computeBracket(top12 = [], results = {}) {
 
     /* ─── Sembrado de la Fase Campeonato (1 a 8) ──────────────────── */
     // 1° a 4° entran directo; los 4 ganadores del Play In ocupan 5° a 8°
-    // ordenados por su posición en la fase regular.
+    // ordenados por su posición en la fase regular. Recién se ubican cuando
+    // terminan las cuatro series: el puesto de cada uno depende de quiénes pasen.
     const champSeeds = [1, 2, 3, 4].map((p) => {
         const s = seedOf(p);
         return s ? { ...s, champSeed: p, regSeed: p, viaPlayIn: false } : null;
     });
 
-    playInWinners.forEach((s, i) => {
-        champSeeds[4 + i] = { ...s, champSeed: 5 + i, regSeed: s.seed, viaPlayIn: true };
-    });
+    if (playInComplete) {
+        playInWinners.forEach((s, i) => {
+            champSeeds[4 + i] = { ...s, champSeed: 5 + i, regSeed: s.seed, viaPlayIn: true };
+        });
+    }
+
+    const outlook = playInComplete ? null : playInOutlook(playIn);
 
     // Dentro de la Fase Campeonato el sembrado que manda es champSeed (1-8).
     const cs = (n) => {
@@ -256,8 +295,8 @@ export function computeBracket(top12 = [], results = {}) {
         [4, 5],
     ];
 
-    const quarterFinals = qfPairs.map(([high, low], i) =>
-        series({
+    const quarterFinals = qfPairs.map(([high, low], i) => ({
+        ...series({
             id: `qf${i + 1}`,
             stage: "quarters",
             label: `${high}° vs ${low}°`,
@@ -267,8 +306,10 @@ export function computeBracket(top12 = [], results = {}) {
             results,
             labelA: `${high}° clasificado`,
             labelB: low <= 4 ? `${low}° clasificado` : `Gan. Play In (${low}°)`,
-        })
-    );
+        }),
+        // [{ team, seed, projected }] mientras el rival sale del Play In en juego
+        candidatesB: low > 4 ? outlook?.[low - 5] ?? [] : [],
+    }));
 
     const qfWinners = quarterFinals.map((s) => s.winnerSlot).filter(Boolean).sort(byRegSeed);
     const qfLosers = quarterFinals.map((s) => s.loserSlot).filter(Boolean).sort(byRegSeed);
